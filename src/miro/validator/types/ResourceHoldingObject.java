@@ -53,6 +53,8 @@ public abstract class ResourceHoldingObject extends RepositoryObject {
 	
 	public abstract X500Principal getIssuer();
 	
+	public abstract X500Principal getSubject();
+	
 	public ResourceHoldingObject(String path, String fname, X509ResourceCertificate cert){
 		super(path,fname);
 		this.certificate = cert;

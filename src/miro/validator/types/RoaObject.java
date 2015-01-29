@@ -71,6 +71,10 @@ public class RoaObject extends ResourceHoldingObject {
 		return roa.getCertificateIssuer();
 	}
 	
+	public X500Principal getSubject() {
+		return roa.getCertificateSubject();
+	}
+	
 	public CertificateObject getEeCert(){
 		return eeCert;
 	}
