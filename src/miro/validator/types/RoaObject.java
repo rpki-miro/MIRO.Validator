@@ -23,6 +23,7 @@ THE SOFTWARE.
 package miro.validator.types;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +79,11 @@ public class RoaObject extends ResourceHoldingObject {
 	public CertificateObject getEeCert(){
 		return eeCert;
 	}
+	
+	public BigInteger getSerialNr() {
+		return eeCert.getSerialNr();
+	}
+	
 	
 	public void extractOwnResults(ValidationResult result){
 		ArrayList<ValidationCheck> allChecks = (ArrayList<ValidationCheck>) result.getAllValidationChecksForLocation(new ValidationLocation(filename));

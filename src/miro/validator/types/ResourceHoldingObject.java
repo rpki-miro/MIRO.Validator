@@ -23,6 +23,7 @@ THE SOFTWARE.
 package miro.validator.types;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,8 @@ public abstract class ResourceHoldingObject extends RepositoryObject {
 	public abstract X500Principal getIssuer();
 	
 	public abstract X500Principal getSubject();
+	
+	public abstract BigInteger getSerialNr();
 	
 	public ResourceHoldingObject(String path, String fname, X509ResourceCertificate cert){
 		super(path,fname);
