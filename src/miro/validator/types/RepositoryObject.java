@@ -54,8 +54,6 @@ public class RepositoryObject {
 	
 	protected URI remoteLocation;
 	
-	
-	
 	public RepositoryObject(String pth, String name){
 		path = pth;
 		filename = name;

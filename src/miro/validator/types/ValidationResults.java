@@ -33,8 +33,28 @@ public class ValidationResults {
 	
 	private HashMap<ValidationStatus, ArrayList<ValidationCheck>> validationResults;
 	
+	private ValidationStatus validationStatus;
+	
 	public ValidationResults(HashMap<ValidationStatus, ArrayList<ValidationCheck>> validationRes) {
 		validationResults = validationRes;
+		setValidationStatus();
+	}
+
+	private void setValidationStatus() {
+		if(!getErrors().isEmpty()){
+			validationStatus = ValidationStatus.ERROR;
+		}
+		else if(!getWarnings().isEmpty()){
+			validationStatus = ValidationStatus.WARNING;
+		}
+		else {
+			validationStatus = ValidationStatus.PASSED;
+		}
+		
+	}
+	
+	public ValidationStatus getValidationStatus() {
+		return validationStatus;
 	}
 
 	public HashMap<ValidationStatus, ArrayList<ValidationCheck>> getValidationResults() {
@@ -48,20 +68,4 @@ public class ValidationResults {
 	public List<ValidationCheck> getErrors(){
 		return validationResults.get(ValidationStatus.ERROR);
 	}
-	
-	public ValidationStatus getValidationStatus() {
-		if(!getErrors().isEmpty()){
-			return ValidationStatus.ERROR;
-		}
-		
-		if(!getWarnings().isEmpty()){
-			return ValidationStatus.WARNING;
-		}
-		
-		return ValidationStatus.PASSED;
-		
-		
-	}
-	
-	
 }
