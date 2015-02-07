@@ -66,6 +66,7 @@ public abstract class ResourceHoldingObject extends RepositoryObject {
 	
 	public ResourceHoldingObject(String path, String fname, X509ResourceCertificate cert, ResourceHoldingObject p){
 		this(path,fname,cert);
+		parent = p;
 	}
 	
 	
