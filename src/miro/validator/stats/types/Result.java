@@ -53,13 +53,20 @@ public class Result {
 	public void incrementObjectCount(String key){
 		incrementHashMapCount(counter,key);
 	}
-	
+
+	public void addToObjectCount(String key, int amount){
+		addToHashMapCount(counter,key,amount);
+	}
 	public Integer getObjectCount(String key){
 		return getHashMapCount(counter,key);
 	}
 	
 	public void incrementWarningCount(String key){
 		incrementHashMapCount(warning, key);
+	}
+	
+	public void addToWarningCount(String key, int amount){
+		addToHashMapCount(warning, key, amount);
 	}
 	
 	public Integer getWarningCount(String key){
@@ -70,8 +77,16 @@ public class Result {
 		return warning.keySet();
 	}
 	
+	public Set<String> getAllObjectKeys() {
+		return counter.keySet();
+	}
+	
 	public void incrementErrorCount(String key){
 		incrementHashMapCount(error, key);
+	}
+	
+	public void addToErrorCount(String key, int amount){
+		addToHashMapCount(error, key, amount);
 	}
 	
 	public Integer getErrorCount(String key){
@@ -80,6 +95,16 @@ public class Result {
 	
 	public Set<String> getAllErrorKeys(){
 		return error.keySet();
+	}
+	
+	private void addToHashMapCount(HashMap<String,Integer> map, String key, int amount){
+		if(!map.containsKey(key)){
+			map.put(key, new Integer(amount));
+			return;
+		}
+		Integer count = map.get(key);
+		count += amount;
+		map.put(key, count);
 	}
 	
 	private void incrementHashMapCount(HashMap<String,Integer> map, String key){
@@ -152,6 +177,20 @@ public class Result {
 
 	public void setDescriptor(String descriptor) {
 		this.descriptor = descriptor;
+	}
+	
+	public void addResult(Result res){
+		for(String objKey : res.getAllObjectKeys()){
+			addToObjectCount(objKey, res.getObjectCount(objKey));
+		}
+		
+		for(String warningKey : res.getAllWarningKeys()){
+			addToWarningCount(warningKey, res.getWarningCount(warningKey));
+		}
+		
+		for(String errorKey : res.getAllErrorKeys()){
+			addToErrorCount(errorKey, res.getErrorCount(errorKey));
+		}
 	}
 	
 	

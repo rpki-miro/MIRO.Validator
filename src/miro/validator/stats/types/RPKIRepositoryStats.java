@@ -82,4 +82,10 @@ public class RPKIRepositoryStats {
 		this.hostResults = hostResults;
 	}
 	
+	public void addStats(RPKIRepositoryStats stats) {
+		Result res = stats.getResult();
+		result.addResult(res);
+		hostResults.addAll(stats.getHostResults());
+	}
+	
 }
