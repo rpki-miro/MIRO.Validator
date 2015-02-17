@@ -32,6 +32,7 @@ import net.ripe.rpki.commons.validation.ValidationStatus;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
@@ -41,9 +42,6 @@ public class ValidationResultsSerializer implements JsonSerializer<ValidationRes
 	public JsonElement serialize(
 			ValidationResults src,
 			Type typeOfSrc, JsonSerializationContext context) {
-		
-		
-		
 		
 		JsonObject validation_results_json = new JsonObject();
 		
@@ -55,12 +53,15 @@ public class ValidationResultsSerializer implements JsonSerializer<ValidationRes
 		ArrayList<ValidationCheck> error_checks = src.getValidationResults().get(ValidationStatus.ERROR);
 		ArrayList<ValidationCheck> warning_checks = src.getValidationResults().get(ValidationStatus.WARNING);
 		
-		if(passed_checks != null){
-			for(ValidationCheck check : passed_checks){
-				passed_results_json.add(context.serialize(check,ValidationCheck.class));
-			}
-			validation_results_json.add("passed", passed_results_json);
-		}
+//		if(passed_checks != null){
+//			for(ValidationCheck check : passed_checks){
+//				passed_results_json.add(context.serialize(check,ValidationCheck.class));
+//			}
+//			validation_results_json.add("passed", passed_results_json);
+//		}
+		
+		
+		validation_results_json.add("isValid", new JsonPrimitive(error_checks.isEmpty()));
 		
 		if(error_checks != null){
 			for(ValidationCheck check : error_checks){

@@ -62,7 +62,7 @@ public class RoaSerializer implements JsonSerializer<RoaObject> {
 		
 		roa_json.add("prefixes", prefixes_json);
 		roa_json.add("validation_result", context.serialize(src.getValidationResults(),ValidationResults.class));
-		roa_json.add("eeCert", context.serialize(src.getEeCert(), CertificateObject.class));
+//		roa_json.add("eeCert", context.serialize(src.getEeCert(), CertificateObject.class));
 		
 		
 		return roa_json;

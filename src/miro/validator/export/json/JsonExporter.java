@@ -56,7 +56,7 @@ public class JsonExporter implements IRepositoryExporter {
 	public void export(ResourceCertificateTree tree) {
 		GsonBuilder builder = new GsonBuilder().disableHtmlEscaping();
 		builder.registerTypeAdapter(ResourceCertificateTree.class, new ResourceCertificateTreeSerializer());
-		builder.registerTypeAdapter(CertificateObject.class, new CertWrapperJsonSerializer());
+		builder.registerTypeAdapter(CertificateObject.class, new CertificateObjectJsonSerializer());
 		builder.registerTypeAdapter(IpResourceSet.class, new IpResourceSetSerializer());
 		builder.registerTypeAdapter(byte[].class, new ByteArrayToHexSerializer());
 		builder.registerTypeAdapter(ManifestObject.class, new ManifestSerializer());

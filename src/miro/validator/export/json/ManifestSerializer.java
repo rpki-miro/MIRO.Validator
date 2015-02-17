@@ -46,6 +46,7 @@ public class ManifestSerializer implements JsonSerializer<ManifestObject> {
 		JsonArray mft_files_json = new JsonArray();
 		JsonObject file_json;
 		
+		manifest_json.add("filename", new JsonPrimitive(src.getFilename()));
 		ManifestCms manifest = src.getManifest();
 		Map<String, byte[]> files = manifest.getFiles();
 		

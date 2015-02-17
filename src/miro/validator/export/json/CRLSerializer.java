@@ -45,6 +45,7 @@ public class CRLSerializer implements JsonSerializer<CRLObject> {
 		
 		X509Crl crl = src.getCrl();
 		JsonObject crl_json = new JsonObject();
+		crl_json.add("filename", new JsonPrimitive(src.getFilename()));
 		JsonArray revoked_certs_json = new JsonArray();
 		JsonObject revoked_cert_json;
 		Set<Entry> revoked_certs = crl.getRevokedCertificates();
