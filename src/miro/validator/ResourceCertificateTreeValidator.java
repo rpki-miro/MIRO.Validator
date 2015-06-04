@@ -34,7 +34,9 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +53,7 @@ import miro.validator.types.CertificateObject;
 import miro.validator.types.RepositoryObject;
 import miro.validator.types.RepositoryObjectFactory;
 import miro.validator.types.ResourceCertificateTree;
+import miro.validator.types.ResourceHoldingObject;
 import miro.validator.validation.ResourceCertificateLocatorImpl;
 import miro.validator.validation.TopDownValidator;
 import net.ripe.rpki.commons.crypto.x509cert.X509CertificateInformationAccessDescriptor;
@@ -110,9 +113,55 @@ public class ResourceCertificateTreeValidator {
 	}
 	
 	public static ResourceCertificateTree withTAL(TrustAnchorLocator tal, PreFetcher preFetcher){
-		return null;
+		CertificateObject trustAnchor = tal.getTrustAnchor();
+		preFetcher.preFetch();
+		trustAnchor = populate(trustAnchor,preFetcher);
+		ResourceCertificateTree tree = ResourceCertificateTree.withTrustAnchor(trustAnchor);
+		return tree;
 	}
 	
+	/**
+	 * Populates the complete logical repository starting at the trust anchor. This means that the trust anchor's
+	 * "children", "mft", and "crl" fields are set. Every CertificateObject in the trust anchor's "children" list
+	 * is also populated in the same way.
+	 * @param trustAnchor
+	 * @param preFetcher
+	 * @return
+	 */
+	public static CertificateObject populate(CertificateObject trustAnchor,
+			PreFetcher preFetcher) {
+
+		Queue<CertificateObject> workingQueue = new LinkedList<CertificateObject>();
+		workingQueue.add(trustAnchor);
+
+		List<CertificateObject> certificateChildren;
+		CertificateObject certificate;
+		while(!workingQueue.isEmpty()){
+			certificate = workingQueue.poll();
+			certificate = getChildren(certificate,preFetcher);
+			certificateChildren = getCertificateObjects(certificate.getChildren());
+			workingQueue.addAll(certificateChildren);
+		}
+		return trustAnchor;
+	}
+
+	public static CertificateObject getChildren(
+			CertificateObject certificate, PreFetcher preFetcher) {
+		// TODO Auto-generated method stub
+		// For all publishing points:
+		// 1. Download pp (check with prefetcher)
+		// 2. Find manifest and set it
+		// 3. Find all files in manifest and set them (crl, children).
+		// 
+		// Once this is done with all publishing points, return the certificate
+		return null;
+	}
+
+	public static List<CertificateObject> getCertificateObjects(
+			List<ResourceHoldingObject> children) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	public ResourceCertificateTree getTreeWithTAL(String talLocation, String name) {
 		URI taLocation = getTrustAnchorURI(talLocation);
 		return createResourceCertificateTree(taLocation, name, getTimestamp());

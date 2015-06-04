@@ -70,6 +70,10 @@ public class ResourceCertificateTree {
 		
 	}
 	
+	public static ResourceCertificateTree withTrustAnchor(CertificateObject ta){
+		return null;
+	}
+	
 	public String getTimeStamp(){
 		return timestamp;
 	}

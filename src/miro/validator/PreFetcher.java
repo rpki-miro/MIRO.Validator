@@ -20,18 +20,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  * 
  * */
-package miro.validator.stats;
-import java.io.FileNotFoundException;
-import java.util.logging.Logger;
+package miro.validator;
 
+import miro.validator.fetcher.RsyncDownloader;
 
-public class Main {
-	
-	public static final Logger log = Logger.getGlobal();
-	
-	
-	public static void main(String[] args) throws FileNotFoundException {
-	
+public class PreFetcher {
 
+	public PreFetcher(String prefetchFilepath) {
+		// TODO Auto-generated constructor stub
 	}
+
+	public PreFetcher() {
+		// TODO Auto-generated constructor stub
+	}
+
+	private RsyncDownloader downloader;
+	
+	
+	
 }
