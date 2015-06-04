@@ -27,11 +27,16 @@ import java.io.FilenameFilter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import miro.validator.ResourceCertificateTreeValidator;
 import miro.validator.fetcher.RsyncDownloader;
+import miro.validator.validation.ResourceCertificateLocatorImpl;
+import miro.validator.validation.TopDownValidator;
 import net.ripe.rpki.commons.crypto.CertificateRepositoryObject;
 import net.ripe.rpki.commons.crypto.cms.roa.RoaCms;
 import net.ripe.rpki.commons.crypto.crl.X509Crl;
@@ -78,121 +83,119 @@ public class ResourceCertificateTree {
 	}
 
 	public void populate() {
-		ArrayList<CertificateObject> currentLevel = new ArrayList<CertificateObject>();
-		ArrayList<CertificateObject> nextLevel = new ArrayList<CertificateObject>();
-		ArrayList<CertificateObject> buf = null;
-		currentLevel.add(trustAnchor);
-		
-		//Read in hierarchy breadth first, top to bottom
-		do{
-			for(ResourceHoldingObject cw : currentLevel){
-				
-				//Read in all certificates issued by cw
-				if(cw instanceof CertificateObject){
-					readChildren((CertificateObject) cw);
-					buf = getCertWrapperChildren((CertificateObject) cw);
-					nextLevel.addAll(buf);
-				}
-				
-			}
-			
-			//Swap out the lists
-			currentLevel = nextLevel;
-			nextLevel = new ArrayList<CertificateObject>();
-			
-		} while(!currentLevel.isEmpty());
+		Queue<CertificateObject> workingQueue = new LinkedList<CertificateObject>();
+		workingQueue.add(trustAnchor);
+		CertificateObject cert;
+		while(!workingQueue.isEmpty()){
+			cert = workingQueue.poll();
+			getChildren(cert);
+			workingQueue.addAll(getCertificateObjectChildren(cert.getChildren()));
+		}
 		log.log(Level.INFO,"Reading done");
-		
 	}
 	
 	
-	private ArrayList<CertificateObject> getCertWrapperChildren(
-			CertificateObject cw) {
+	private ArrayList<CertificateObject> getCertificateObjectChildren(List<ResourceHoldingObject> children) {
 		ArrayList<CertificateObject> certKids = new ArrayList<CertificateObject>();
-		for(ResourceHoldingObject child : cw.getChildren()){
+		for(ResourceHoldingObject child : children){
 			if(child instanceof CertificateObject){
 				certKids.add((CertificateObject) child);
 			}
 		}
 		return certKids;
 	}
-
-
-	public void readChildren(CertificateObject cw) {
-		ArrayList<String> pubPoints = getIssued(cw.getCertificate().getSubjectInformationAccess());
-		cw.setChildren(new ArrayList<ResourceHoldingObject>());
-		
-		cw.findManifest(result);
-		
-		File pubDir;
-		String ppPath;
-		String[] filelist;
-		String[] crlList;
+	
+	public void findManifest(CertificateObject cw) {
+		String path = ResourceCertificateTreeValidator.toPath(cw.getCertificate().getManifestUri());
+		ManifestObject manifest = null;
+		try {
+			manifest = RepositoryObjectFactory.createManifestObject(path, result);
+		} catch (Exception e) {
+			log.log(Level.WARNING, "Could not read manifest " + path);
+		}
+		manifest.setRemoteLocation(cw.getCertificate().getManifestUri());
+		cw.setManifest(manifest);
+	}
+	
+	public void findCRL(URI location, CertificateObject cw){
+		String path = ResourceCertificateTreeValidator.toPath(location);
+		String[] crlList = getCrlFiles(new File(path));
+		CRLObject crlWrap = null;
+		boolean foundCrl = false;
 		String filepath;
+		for (String filename : crlList) {
+			filepath = path + "/" + filename;
+			try {
+				crlWrap = RepositoryObjectFactory.createCRLObject(filepath,
+						result);
+			} catch (Exception e) {
+				log.log(Level.SEVERE, e.toString(), e);
+				log.log(Level.WARNING, "Could not read " + filepath);
+			}
+
+			if (cw.getSubject().equals(crlWrap.getCrl().getIssuer())) {
+				cw.setCrl(crlWrap);
+				crlWrap.setRemoteLocation(location);
+				foundCrl = true;
+				break;
+			}
+		}
+
+		if (!foundCrl) {
+			log.log(Level.WARNING, "Could not find CRL for " + cw.getFilename());
+		}
+	}
+	
+	public boolean isPublishingPoint(X509CertificateInformationAccessDescriptor accessDescriptor) {
+		return !accessDescriptor.getLocation().toString().endsWith(".mft");
+	}
+	public void getChildren(CertificateObject cw) {
+		cw.setChildren(new ArrayList<ResourceHoldingObject>());
 		for(X509CertificateInformationAccessDescriptor accessDescriptor : cw.getCertificate().getSubjectInformationAccess()){
 			
+			if(!isPublishingPoint(accessDescriptor))
+				continue;
 			
-			ppPath = RsyncDownloader.getRelativePath(accessDescriptor.getLocation(), BASE_DIR);
-			validator.fetchIssued(accessDescriptor.getLocation(), ppPath);
-
-			pubDir = new File(ppPath);
-			
-			if(!pubDir.isDirectory()){
+			int rtval = validator.fetchURI(accessDescriptor.getLocation());
+			if(rtval != 0){
+				log.log(Level.WARNING, "Could not download publishing point: " + accessDescriptor.getLocation());
 				continue;
 			}
-			
-			crlList = getCrlFiles(pubDir);
-			CRLObject crlWrap = null;
-			boolean foundCrl = false;
-			for(String filename : crlList){
-				filepath  = ppPath + "/" + filename;
-				try{
-					crlWrap = RepositoryObjectFactory.createCrlWrapper(filepath, result);
-					crlWrap.setRemoteLocation(accessDescriptor.getLocation());
-				} catch (Exception e){
-					log.log(Level.SEVERE,e.toString(),e);
-					log.log(Level.WARNING,"Could not read "+ filepath);
-				}
-				
-				if(cw.getSubject().equals(crlWrap.getCrl().getIssuer())){
-					cw.setCrl(crlWrap);
-					foundCrl = true;
-					break;
-				}
-			}
-			
-			if(!foundCrl){
-				log.log(Level.WARNING,"Could not find CRL for "+ cw.getFilename());
-			}
-			
-		
-			
-			filelist = getResourceHoldingFiles(pubDir);
-			for(String filename : filelist){
-				filepath = ppPath + "/" + filename;
+			findManifest(cw);
+			findCRL(accessDescriptor.getLocation(),cw);
+			findChildren(accessDescriptor.getLocation(),cw);
+		}
+	}
 
-				//Don't add ourselves to our children, or else we get a loop
-				if(cw.getFilename().equals(filename)){
-					continue;
-				}
-				
-				ResourceHoldingObject obj  = null;
-				try{
-					obj = RepositoryObjectFactory.createResourceHoldingObject(filepath, result,cw);
-					obj.setRemoteLocation(accessDescriptor.getLocation());
-					
-				} catch (Exception e){
-					log.log(Level.SEVERE,e.toString(),e);
-					log.log(Level.WARNING,"Could not read "+ filepath);
-				}
-				
-				//Make sure its our kids before adding
-				if(cw.getSubject().equals(obj.getIssuer())){
-					log.log(Level.FINER, "Read in certificate "+ filepath);
-					cw.getChildren().add(obj);
-				}
-				
+	private void findChildren(URI location, CertificateObject cw) {
+		cw.setChildren(new ArrayList<ResourceHoldingObject>());
+		String ppPath = ResourceCertificateTreeValidator.toPath(location);
+		String[] filelist = getResourceHoldingFiles(new File(ppPath));
+		for (String filename : filelist) {
+			String filepath = ppPath + "/" + filename;
+
+			// Don't add ourselves to our children, or else we get a loop
+			if (cw.getFilename().equals(filename)) {
+				continue;
 			}
+
+			ResourceHoldingObject obj = null;
+			try {
+				obj = RepositoryObjectFactory.createResourceHoldingObject(
+						filepath, result, cw);
+				obj.setRemoteLocation(location);
+
+			} catch (Exception e) {
+				log.log(Level.SEVERE, e.toString(), e);
+				log.log(Level.WARNING, "Could not read " + filepath);
+			}
+
+			// Make sure its our kids before adding
+			if (cw.getSubject().equals(obj.getIssuer())) {
+				log.log(Level.FINER, "Read in certificate " + filepath);
+				cw.getChildren().add(obj);
+			}
+
 		}
 	}
 
@@ -211,10 +214,7 @@ public class ResourceCertificateTree {
 			
 		});
 	}
-	
-	
-	
-	
+
 	private String[] getResourceHoldingFiles(File pubDir) {
 		final String[] suffixes = new String[]{".cer",".roa"};
 		return pubDir.list(new FilenameFilter(){
@@ -235,30 +235,30 @@ public class ResourceCertificateTree {
 	
 	
 	
-	private ArrayList<String> getIssued(X509CertificateInformationAccessDescriptor[] sia){
-		ArrayList<String> pubDirs = new ArrayList<String>();
-		
-		if(sia == null){
-			return pubDirs;
-		}
-		
-		String result;
-		for(X509CertificateInformationAccessDescriptor desc : sia){
-			
-			result = RsyncDownloader.getRelativePath(desc.getLocation(), BASE_DIR);
-			File resultFile = new File(result);
-			
-			validator.fetchIssued(desc.getLocation(), result);
-			
-			if(resultFile.isDirectory()){
-				pubDirs.add(result);
-			}
-			
-			
-			
-		}
-		return pubDirs;
-	}
+//	private ArrayList<String> getIssued(X509CertificateInformationAccessDescriptor[] sia){
+//		ArrayList<String> pubDirs = new ArrayList<String>();
+//		
+//		if(sia == null){
+//			return pubDirs;
+//		}
+//		
+//		String result;
+//		for(X509CertificateInformationAccessDescriptor desc : sia){
+//			
+//			result = RsyncDownloader.getRelativePath(desc.getLocation(), BASE_DIR);
+//			File resultFile = new File(result);
+//			
+//			validator.fetchIssued(desc.getLocation(), result);
+//			
+//			if(resultFile.isDirectory()){
+//				pubDirs.add(result);
+//			}
+//			
+//			
+//			
+//		}
+//		return pubDirs;
+//	}
 
 
 
@@ -298,5 +298,10 @@ public class ResourceCertificateTree {
 			nextLevel = new ArrayList<ResourceHoldingObject>();
 			
 		} while(!currentLevel.isEmpty());
+	}
+
+	public void validate() {
+		TopDownValidator validator = new TopDownValidator(result, new ResourceCertificateLocatorImpl(), trustAnchor);
+		validator.validate();
 	}
 }

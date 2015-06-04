@@ -56,7 +56,7 @@ public class RoaObject extends ResourceHoldingObject {
 	public RoaObject(String pth, String name, RoaCms r, ResourceHoldingObject p){
 		super(pth,name,r.getCertificate(),p);
 		this.roa = r;
-		this.eeCert = RepositoryObjectFactory.createCertWrapper(pth, name, roa.getCertificate(), p);
+		this.eeCert = RepositoryObjectFactory.createCertificateObjectWithParent(pth, name, roa.getCertificate(), p);
 	}
 	
 	public DateTime getSigningTime(){

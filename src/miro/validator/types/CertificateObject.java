@@ -53,29 +53,21 @@ import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryOb
 public class CertificateObject extends ResourceHoldingObject {
 	static final Logger log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	
-	//Every certificate has these attributes
 	private BigInteger serialNr;
 	private X500Principal subject;
 	private byte[] subjectKeyIdentifier;
 	private PublicKey publicKey;
 	private X500Principal issuer;
-
 	private boolean isEE;
 	private boolean isCA;
 	private boolean isRoot;
-	
 	private byte[] aki;
 	private X509CertificateInformationAccessDescriptor[] aias;
 	
-	
 	private ManifestObject manifest;
 	private CRLObject crl;
-	
 	private ArrayList<ResourceHoldingObject> children;
 
-	
-	
-	//Only use this constructor directly if cert isRoot()
 	public CertificateObject(String pth, String fname, X509ResourceCertificate cert) {
 		super(pth,fname,cert);
 		issuer = certificate.getIssuer();
@@ -104,16 +96,13 @@ public class CertificateObject extends ResourceHoldingObject {
 	public void findManifest(ValidationResult result){
 		URI mftUri = certificate.getManifestUri();
 		String path = ResourceCertificateTreeValidator.toPath(mftUri);
-		File file = new File(path);
-		ManifestCms mft = null;
 		try {
-			mft = (ManifestCms) RepositoryObjectFactory.readCertificateRepositoryObjectFile(file, result);
+			manifest = RepositoryObjectFactory.createManifestObject(path, result);
+			manifest.setRemoteLocation(mftUri);
 		} catch (Exception e) {
-			log.log(Level.WARNING, "Could not read manifest " + file.getName() + " for " + getFilename());
+			log.log(Level.WARNING, "Could not read manifest " + path + " for " + getFilename());
 			return;
 		}
-		manifest = new ManifestObject(path, file.getName(), mft);
-		manifest.setRemoteLocation(mftUri);
 	}
 	
 	public X500Principal getIssuer() {
@@ -215,6 +204,10 @@ public class CertificateObject extends ResourceHoldingObject {
 			kid_filenames.add(c.getFilename());
 		}
 		return kid_filenames;
+	}
+
+	public void setManifest(ManifestObject manifest) {
+		this.manifest = manifest;
 	}
 
 

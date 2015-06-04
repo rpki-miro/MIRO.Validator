@@ -48,19 +48,13 @@ import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryOb
 import net.ripe.rpki.commons.validation.objectvalidators.ResourceCertificateLocator;
 
 public class TopDownValidator {
-	
 	public static final Logger log = Logger.getGlobal();
 	
     private ValidationResult result;
-    private ValidationLocation location;
     private ResourceCertificateLocator locator;
     private ValidationOptions options;
-    
-    
-    Queue<CertificateObject> workQueue;
-    
-    CertificateRepositoryObjectValidationContext context;
-    
+    private Queue<CertificateObject> workQueue;
+    private CertificateRepositoryObjectValidationContext context;
 	
     public TopDownValidator(ValidationResult result, ResourceCertificateLocator locator, CertificateObject trustAnchor){
     	this.result = result;
@@ -70,33 +64,28 @@ public class TopDownValidator {
     	this.context = new CertificateRepositoryObjectValidationContext(URI.create(trustAnchor.getFilename()), trustAnchor.getCertificate());
     	this.workQueue.add(trustAnchor);
     }
-    
-
-	public ValidationResult getValidationResult() {
-		return result;
-	}
-	
 	
 	public void validate() {
 		while(!workQueue.isEmpty()){
-			
+		
+			/* Get next Certificate */
 			CertificateObject parent = workQueue.remove();
+			
+			/* If its not a trust anchor, set up a new context */
 			if(!parent.getIsRoot()){
 				this.context = this.context.createChildContext(URI.create(parent.getFilename()), parent.getCertificate());
 			}
 			
-			ManifestObject mftWrap = parent.getManifest();
+			/* Verify that mft and crl are not missing, rpki-commons does not do this */
 			result.setLocation(new ValidationLocation(parent.getFilename()));
-			result.warnIfNull(mftWrap, "missing.manifest", ResourceCertificateTreeValidator.toPath(parent.getCertificate().getManifestUri()));
-			validateManifest(mftWrap);
-			
-			
-			CRLObject crlWrap = parent.getCrl();
-			result.setLocation(new ValidationLocation(parent.getFilename()));
-			result.warnIfNull(crlWrap, "missing.crl");
+			result.warnIfNull(parent.getManifest(), "missing.manifest"); 
+			result.warnIfNull(parent.getCrl(), "missing.crl");
+		
+			validateManifest(parent.getManifest());
 			validateCrl(parent.getCrl());
 			
-			
+			/* Validate children, e.g. CertificateObject, RoaObject */
+			/* This also adds the validated CertificateObjects to the workQueue */
 			validateChildren(parent);
 		}
 		log.log(Level.INFO,"Validating done");
@@ -167,6 +156,9 @@ public class TopDownValidator {
 	}
 	
 
+	public ValidationResult getValidationResult() {
+		return result;
+	}
 	private void validateCrl(CRLObject crlWrap) {
 		if(crlWrap == null){
 			return;

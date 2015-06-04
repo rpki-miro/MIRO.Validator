@@ -78,7 +78,42 @@ public class ResourceCertificateTreeValidator {
 		downloader = new RsyncDownloader();
 	}
 	
-	public ResourceCertificateTree getModelByTAL(String talLocation, String name) {
+	/**
+	 * Creates a ResourceCertificateTree with the path to a trust anchor locator file
+	 * @param talFilepath Path of a trust anchor locator file
+	 * @return ResourceCertificateTree of the trust anchor located by the tal
+	 */
+	public static ResourceCertificateTree withTALfilepath(String talFilepath){
+		TrustAnchorLocator tal = readTrustAnchorLocator(talFilepath);
+		return withTAL(tal, new PreFetcher());
+	}
+	
+	/**
+	 * Creates a ResourceCertificateTree with the path to a trust anchor locator file and a prefetch file. 
+	 * @param talFilepath Path of a trust anchor locator file
+	 * @param prefetchFilepath Path to a file that contains URIs that are to be prefetched before the actual
+	 *  fetching for the ResourceCertificateTree begins.
+	 * @return ResourceCertificateTree of the trust anchor located by the tal
+	 */
+	public static ResourceCertificateTree withTALandPrefetchFilepath(String talFilepath, String prefetchFilepath){
+		TrustAnchorLocator tal = readTrustAnchorLocator(talFilepath);
+		PreFetcher preFetcher = new PreFetcher(prefetchFilepath);
+		return ResourceCertificateTreeValidator.withTAL(tal, preFetcher);
+	}
+
+	public static TrustAnchorLocator readTrustAnchorLocator(String filepath){
+		return null;
+	}
+
+	public static PreFetcher readPrefetchURIs(String filepath){
+		return null;
+	}
+	
+	public static ResourceCertificateTree withTAL(TrustAnchorLocator tal, PreFetcher preFetcher){
+		return null;
+	}
+	
+	public ResourceCertificateTree getTreeWithTAL(String talLocation, String name) {
 		URI taLocation = getTrustAnchorURI(talLocation);
 		return createResourceCertificateTree(taLocation, name, getTimestamp());
 	}
@@ -112,8 +147,7 @@ public class ResourceCertificateTreeValidator {
 		
 		CertificateObject trustAnchor = null; 
 		try {
-			trustAnchor = (CertificateObject) RepositoryObjectFactory.createResourceHoldingObject(taLocation, result);
-//			trustAnchor.findManifest(result);
+			trustAnchor = RepositoryObjectFactory.createCertificateObject(taLocation, result);
 		} catch (Exception e) {
 			log.log(Level.SEVERE,e.toString(),e);
 			log.log(Level.SEVERE,"Could not read trust anchor {0}",taLocation);
@@ -136,7 +170,7 @@ public class ResourceCertificateTreeValidator {
 		
 		ResourceCertificateTree tree = new ResourceCertificateTree(this, name, trustAnchor, result, ts, BASE_DIR);
 		tree.populate();
-		validate(result,trustAnchor);
+		tree.validate();
 		tree.extractValidationResults();
 		certTree = tree;
 		return certTree;
@@ -153,7 +187,7 @@ public class ResourceCertificateTreeValidator {
 		
 		ResourceCertificateTree tree = new ResourceCertificateTree(this, name, ta, result, ts, BASE_DIR);
 		tree.populate();
-		validate(result,ta);
+		tree.validate();
 		tree.extractValidationResults();
 		certTree = tree;
 		return certTree;
@@ -171,14 +205,8 @@ public class ResourceCertificateTreeValidator {
 		}
 		log.log(Level.INFO, "Done prefetching..");
 	}
+	
 
-	public static void validate(ValidationResult result, CertificateObject trustAnchor) {
-		TopDownValidator validator = new TopDownValidator(result, new ResourceCertificateLocatorImpl(), trustAnchor);
-		validator.validate();
-		
-	}
-	
-	
 	public static String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
 	    for ( int j = 0; j < bytes.length; j++ ) {
@@ -252,18 +280,21 @@ public class ResourceCertificateTreeValidator {
 		f.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return f.format(new Date());
 	}
-
-	public void fetchIssued(URI desc,
-			String result) {
-		
-		String descStr = desc.toString();
+	
+	public boolean wasPrefetched(URI uri){
+		String descStr = uri.toString();
 		for(String prefetchedLocation : prefetched) {
 			if(descStr.startsWith(prefetchedLocation)){
-				return;
+				return true;
 			}
 		}
-		
-		downloader.downloadData(descStr,result);
-		
+		return false;
+	}
+
+	public int fetchURI(URI desc) {
+		String result = toPath(desc);
+		if(wasPrefetched(desc))
+			return 0;
+		return downloader.downloadData(desc,result);
 	}
 }

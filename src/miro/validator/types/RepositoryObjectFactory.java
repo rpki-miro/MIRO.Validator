@@ -54,7 +54,7 @@ public class RepositoryObjectFactory {
 		resourceObjects = new HashMap<X509ResourceCertificate, ResourceHoldingObject>();
 	}
 	
-	public static CertificateRepositoryObject readCertificateRepositoryObjectFile(File file, ValidationResult validationResult) throws Exception {
+	private static CertificateRepositoryObject readCertificateRepositoryObjectFile(File file, ValidationResult validationResult) throws Exception {
 		
 		byte[] contents;
 		CertificateRepositoryObject obj = null;
@@ -68,18 +68,18 @@ public class RepositoryObjectFactory {
 		
 		return obj;
 	}
-
-	public static ResourceHoldingObject createResourceHoldingObject(String pth, ValidationResult result) throws Exception {
+	
+	public static CertificateObject createCertificateObject(String pth, ValidationResult result) throws Exception {
 		
 		File file = new File(pth);
 		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
-
-		
 		if(obj instanceof X509ResourceCertificate){
-			return createCertWrapper(pth, file.getName(), (X509ResourceCertificate) obj);
+			CertificateObject cw = new CertificateObject(pth, file.getName(), (X509ResourceCertificate) obj);
+			resourceObjects.put((X509ResourceCertificate)obj, cw);
+			return cw;
 		}
 		
-		throw new IllegalArgumentException("Invalid ResourceHoldingObject "+file.getName());
+		throw new IllegalArgumentException("Invalid Certificate file "+file.getName());
 	}
 	
 	public static ResourceHoldingObject createResourceHoldingObject(String pth, ValidationResult result, ResourceHoldingObject p) throws Exception{
@@ -88,36 +88,28 @@ public class RepositoryObjectFactory {
 
 		
 		if(obj instanceof X509ResourceCertificate){
-			return createCertWrapper(pth, file.getName(), (X509ResourceCertificate) obj,p);
+			return createCertificateObjectWithParent(pth, file.getName(), (X509ResourceCertificate) obj,p);
 		}
 		
 		if(obj instanceof RoaCms) {
-			return createRoaWrapper(pth,file.getName(),(RoaCms) obj,p);
+			return createRoaObject(pth,file.getName(),(RoaCms) obj,p);
 		}
 		throw new IllegalArgumentException("Invalid ResourceHoldingObject "+file.getName());
 	}
 	
-	
-	
-	public static CertificateObject createCertWrapper(String path, String fname, X509ResourceCertificate cert){
-		CertificateObject result = new CertificateObject(path, fname, cert);
-		resourceObjects.put(cert, result);
-		return result;
-	}
-	
-	public static CertificateObject createCertWrapper(String path, String fname, X509ResourceCertificate cert, ResourceHoldingObject p){
+	public static CertificateObject createCertificateObjectWithParent(String path, String fname, X509ResourceCertificate cert, ResourceHoldingObject p){
 		CertificateObject result = new CertificateObject(path, fname, cert,p);
 		resourceObjects.put(cert, result);
 		return result;
 	}
 	
-	public static RoaObject createRoaWrapper(String path, String fname, RoaCms roa, ResourceHoldingObject p){
+	public static RoaObject createRoaObject(String path, String fname, RoaCms roa, ResourceHoldingObject p){
 		RoaObject result = new RoaObject(path, fname, roa,p);
 		resourceObjects.put(result.getCertificate(), result);
 		return result;
 	}
 	
-	public static ManifestObject createManifestWrapper(String path, ValidationResult result) throws Exception{
+	public static ManifestObject createManifestObject(String path, ValidationResult result) throws Exception{
 		File file = new File(path);
 		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
 		
@@ -127,7 +119,7 @@ public class RepositoryObjectFactory {
 		throw new IllegalArgumentException("Invalid Manifest " + file.getName());
 	}
 	
-	public static CRLObject createCrlWrapper(String path, ValidationResult result) throws Exception{
+	public static CRLObject createCRLObject(String path, ValidationResult result) throws Exception{
 		File file = new File(path);
 		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
 		
@@ -152,8 +144,4 @@ public class RepositoryObjectFactory {
 		return result_bytes;
 		
 	}
-	
-	
-	
-
 }

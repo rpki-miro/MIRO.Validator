@@ -99,12 +99,8 @@ public class ResultExtractor {
 				}
 				
 			}
-			
 			currentLevel = nextLevel;
 			nextLevel = new ArrayList<ResourceHoldingObject>();
-			
-			
-			
 		} while(!currentLevel.isEmpty());
 		log.log(Level.INFO,"Extracting done");
 	}

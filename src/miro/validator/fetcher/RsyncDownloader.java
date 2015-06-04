@@ -94,6 +94,10 @@ public class RsyncDownloader {
 		
 	}
 	
+	
+	public int downloadData(URI source, String destination){
+		return downloadData(source.toString(), destination);
+	}
 	public int downloadData(String source, String destination) {
 		
 		createDirectories(destination);
@@ -101,8 +105,8 @@ public class RsyncDownloader {
 		Rsync rsync = new Rsync(source, destination);
 		rsync.addOptions("-a", "-v");
 		log.log(Level.INFO, "Fetching {0}", source);
-//		int rtval = rsync.execute();
-		int rtval = 0;
+		int rtval = rsync.execute();
+//		int rtval = 0;
 		log.log(Level.FINE,
 				"Rsync: Source {0} , Dest. {1}, Duration {2}",
 				new Object[] { rsync.getSource(), rsync.getDestination(),
