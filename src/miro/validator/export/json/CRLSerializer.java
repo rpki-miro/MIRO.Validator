@@ -39,7 +39,6 @@ import com.google.gson.JsonSerializer;
 
 public class CRLSerializer implements JsonSerializer<CRLObject> {
 
-	@Override
 	public JsonElement serialize(CRLObject src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

@@ -39,7 +39,6 @@ import com.google.gson.JsonSerializer;
 
 public class RoaSerializer implements JsonSerializer<RoaObject> {
 
-	@Override
 	public JsonElement serialize(RoaObject src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

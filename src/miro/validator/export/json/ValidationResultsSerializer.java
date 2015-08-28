@@ -38,7 +38,6 @@ import com.google.gson.JsonSerializer;
 
 public class ValidationResultsSerializer implements JsonSerializer<ValidationResults> {
 
-	@Override
 	public JsonElement serialize(
 			ValidationResults src,
 			Type typeOfSrc, JsonSerializationContext context) {

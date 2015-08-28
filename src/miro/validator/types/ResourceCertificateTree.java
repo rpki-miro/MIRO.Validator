@@ -201,7 +201,6 @@ public class ResourceCertificateTree {
 		final String suffix = ".crl";
 		return pubDir.list(new FilenameFilter(){
 			
-			@Override
 			public boolean accept(File arg0, String arg1) {
 				
 				if(arg1.endsWith(suffix)){
@@ -220,7 +219,6 @@ public class ResourceCertificateTree {
 		final String[] suffixes = new String[]{".cer",".roa"};
 		return pubDir.list(new FilenameFilter(){
 			
-			@Override
 			public boolean accept(File arg0, String name) {
 				
 				for(String suffix : suffixes){

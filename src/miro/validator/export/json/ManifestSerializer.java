@@ -38,7 +38,6 @@ import com.google.gson.JsonSerializer;
 
 public class ManifestSerializer implements JsonSerializer<ManifestObject> {
 
-	@Override
 	public JsonElement serialize(ManifestObject src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

@@ -34,7 +34,6 @@ import com.google.gson.JsonSerializer;
 
 public class RPKIRepositoryStatsSerializer implements JsonSerializer<RPKIRepositoryStats> {
 
-	@Override
 	public JsonElement serialize(RPKIRepositoryStats src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

@@ -36,7 +36,6 @@ import com.google.gson.JsonSerializer;
 
 public class ResultSerializer implements JsonSerializer<Result> {
 
-	@Override
 	public JsonElement serialize(Result src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

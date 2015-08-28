@@ -35,7 +35,6 @@ import com.google.gson.JsonSerializer;
 
 public class ValidationCheckSerializer implements JsonSerializer<ValidationCheck> {
 
-	@Override
 	public JsonElement serialize(ValidationCheck src, Type typeOfSrc,
 			JsonSerializationContext context) {
 	

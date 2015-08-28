@@ -34,7 +34,6 @@ import com.google.gson.JsonSerializer;
 
 public class ResourceHoldingObjectSerializer implements JsonSerializer<ResourceHoldingObject> {
 
-	@Override
 	public JsonElement serialize(ResourceHoldingObject src, Type typeOfSrc,
 			JsonSerializationContext context) {
 

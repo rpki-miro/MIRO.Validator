@@ -35,7 +35,6 @@ import com.google.gson.JsonSerializer;
 
 public class ResourceCertificateTreeSerializer implements JsonSerializer<ResourceCertificateTree>{
 
-	@Override
 	public JsonElement serialize(ResourceCertificateTree src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

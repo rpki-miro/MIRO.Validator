@@ -14,7 +14,6 @@ import com.google.gson.JsonSerializer;
 
 public class RepositoryObjectSerializer implements JsonSerializer<RepositoryObject> {
 
-	@Override
 	public JsonElement serialize(RepositoryObject src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

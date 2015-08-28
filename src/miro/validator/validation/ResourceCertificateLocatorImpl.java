@@ -39,7 +39,6 @@ import net.ripe.rpki.commons.validation.objectvalidators.ResourceCertificateLoca
 public class ResourceCertificateLocatorImpl implements
 		ResourceCertificateLocator, CrlLocator {
 
-	@Override
 	public CertificateRepositoryObjectFile<X509ResourceCertificate> findParent(
 			X509ResourceCertificate certificate) {
 		ResourceHoldingObject objWrap = RepositoryObjectFactory.resourceObjects.get(certificate);
@@ -53,7 +52,6 @@ public class ResourceCertificateLocatorImpl implements
 		
 	}
 
-	@Override
 	public CertificateRepositoryObjectFile<X509Crl> findCrl(
 			X509ResourceCertificate certificate) {
 		
@@ -75,7 +73,6 @@ public class ResourceCertificateLocatorImpl implements
 		
 	}
 
-	@Override
 	public X509Crl getCrl(URI uri,
 			CertificateRepositoryObjectValidationContext context,
 			ValidationResult result) {

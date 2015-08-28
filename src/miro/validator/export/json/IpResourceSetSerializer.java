@@ -36,7 +36,6 @@ import com.google.gson.JsonSerializer;
 
 public class IpResourceSetSerializer implements JsonSerializer<IpResourceSet> {
 
-	@Override
 	public JsonElement serialize(IpResourceSet src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		

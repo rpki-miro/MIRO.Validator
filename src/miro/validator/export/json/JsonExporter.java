@@ -52,7 +52,6 @@ public class JsonExporter implements IRepositoryExporter {
 		this.EXPORT_FILE = export_file;
 	}
 	
-	@Override
 	public void export(ResourceCertificateTree tree) {
 		GsonBuilder builder = new GsonBuilder().disableHtmlEscaping();
 		builder.registerTypeAdapter(ResourceCertificateTree.class, new ResourceCertificateTreeSerializer());

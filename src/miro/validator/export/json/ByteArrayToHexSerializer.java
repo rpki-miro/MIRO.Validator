@@ -33,7 +33,6 @@ import com.google.gson.JsonSerializer;
 
 public class ByteArrayToHexSerializer implements JsonSerializer<byte[]> {
 
-	@Override
 	public JsonElement serialize(byte[] src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		
