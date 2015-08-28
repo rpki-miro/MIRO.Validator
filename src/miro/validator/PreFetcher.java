@@ -35,6 +35,11 @@ public class PreFetcher {
 	}
 
 	private RsyncDownloader downloader;
+
+	public void preFetch() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
 	
