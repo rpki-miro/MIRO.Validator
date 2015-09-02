@@ -22,7 +22,11 @@ THE SOFTWARE.
  * */
 package miro.validator;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,54 +37,101 @@ public class PreFetcher {
 
 	private RsyncDownloader downloader;
 	
-	private List<URI> prefetchURIs;
+	private List<URI> prefetchURIs = new ArrayList<URI>();
 	
 	private File prefetchURIstorage;
+	
+	private boolean writeToFile = false;
 
 	
 	public PreFetcher(String filepath) {
-		// Read the file and store the URIs here. At the end of fetching, overwrite the file with the current URIs
+		prefetchURIstorage = new File(filepath);
+		readPrefetchURIsFromFile();
+		writeToFile = true;
 	}
 	
 	public PreFetcher() {
-		prefetchURIs = new ArrayList<URI>();
+		
 	}
 
 	public void preFetch() {
 		for(URI uri : prefetchURIs){
-			
+		//TODO fetch stuff	
 		}
 	}
 	
 	public void readPrefetchURIsFromFile() {
-		//Reads the prefetchURIs from prefetchURIstorage and adds them to prefetchURIs
-		//need to avoid null pointer in case file wasn't passed
+		if(!prefetchURIstorage.canRead())
+			throw new RuntimeException("Cannot read " + prefetchURIstorage.getName());
+		
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(prefetchURIstorage));
+			String line;
+			URI uri;
+			while((line = br.readLine()) != null){
+				uri = URI.create(line);
+				addURI(uri);
+			}
+			br.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		} 
 	}
 	
 	public void writePrefetchURIsToFile() {
-		//write URIs in prefetchURIs to prefetchURIstorage
-		//need to avoid null pointer in case file wasn't passed
+		if(!writeToFile)
+			return;
+		
+		try {
+			FileWriter writer = new FileWriter(prefetchURIstorage, false);
+			for(URI uri : prefetchURIs){
+				writer.write(uri.toString());
+				writer.write('\n');
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
 	}
 	
 	public boolean removeURI(URI pfUri) {
-		//Try to remove the URI from the prefetchURIs list, if its not there then return false, else true.
-		return false;
+		List<URI> toBeRemoved = new ArrayList<URI>();
+		for(URI uri : prefetchURIs) {
+			if(uri.equals(pfUri))
+				toBeRemoved.add(uri);
+		}
+		prefetchURIs.removeAll(toBeRemoved);
+		return !toBeRemoved.isEmpty();
 	}
 	
 	public boolean addURI(URI pfUri) {
+		List<URI> toBeRemoved = new ArrayList<URI>();
 		boolean alreadyContained = false;
-		String buffer;
-		String pfStr = pfUri.toString();
 		for(URI uri : prefetchURIs) {
-			buffer = uri.toString();
-			if(pfStr.startsWith(buffer)){
-				alreadyContained = true;
+			if(uri.getHost().equals(pfUri.getHost())){
+				
+				if(pfUri.getPath().startsWith(uri.getPath()))
+					alreadyContained = true;
+				
+				if(uri.getPath().startsWith(pfUri.getPath()))
+					toBeRemoved.add(uri);
 			}
 		}
-		
 		if(!alreadyContained) {
 			prefetchURIs.add(pfUri);
+			prefetchURIs.removeAll(toBeRemoved);
 		}
 		return !alreadyContained;
 	}
+	
+	public List<URI> getPrefetchURIs() {
+		return prefetchURIs;
+	}
+
+	public boolean isWriteToFile() {
+		return writeToFile;
+	}
+	
 }
