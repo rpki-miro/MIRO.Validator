@@ -22,25 +22,65 @@ THE SOFTWARE.
  * */
 package miro.validator;
 
+import java.io.File;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
 import miro.validator.fetcher.RsyncDownloader;
 
 public class PreFetcher {
 
-	public PreFetcher(String prefetchFilepath) {
-		// TODO Auto-generated constructor stub
-	}
-
-	public PreFetcher() {
-		// TODO Auto-generated constructor stub
-	}
-
 	private RsyncDownloader downloader;
+	
+	private List<URI> prefetchURIs;
+	
+	private File prefetchURIstorage;
+
+	
+	public PreFetcher(String filepath) {
+		// Read the file and store the URIs here. At the end of fetching, overwrite the file with the current URIs
+	}
+	
+	public PreFetcher() {
+		prefetchURIs = new ArrayList<URI>();
+	}
 
 	public void preFetch() {
-		// TODO Auto-generated method stub
-		
+		for(URI uri : prefetchURIs){
+			
+		}
 	}
 	
+	public void readPrefetchURIsFromFile() {
+		//Reads the prefetchURIs from prefetchURIstorage and adds them to prefetchURIs
+		//need to avoid null pointer in case file wasn't passed
+	}
 	
+	public void writePrefetchURIsToFile() {
+		//write URIs in prefetchURIs to prefetchURIstorage
+		//need to avoid null pointer in case file wasn't passed
+	}
 	
+	public boolean removeURI(URI pfUri) {
+		//Try to remove the URI from the prefetchURIs list, if its not there then return false, else true.
+		return false;
+	}
+	
+	public boolean addURI(URI pfUri) {
+		boolean alreadyContained = false;
+		String buffer;
+		String pfStr = pfUri.toString();
+		for(URI uri : prefetchURIs) {
+			buffer = uri.toString();
+			if(pfStr.startsWith(buffer)){
+				alreadyContained = true;
+			}
+		}
+		
+		if(!alreadyContained) {
+			prefetchURIs.add(pfUri);
+		}
+		return !alreadyContained;
+	}
 }
