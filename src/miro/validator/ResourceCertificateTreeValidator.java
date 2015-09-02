@@ -24,6 +24,7 @@ package miro.validator;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,7 +89,7 @@ public class ResourceCertificateTreeValidator {
 	 * @return ResourceCertificateTree of the trust anchor located by the tal
 	 */
 	public static ResourceCertificateTree withTALfilepath(String talFilepath){
-		TrustAnchorLocator tal = readTrustAnchorLocator(talFilepath);
+		TrustAnchorLocator tal = new TrustAnchorLocator(talFilepath);
 		return withTAL(tal, new PreFetcher());
 	}
 	
@@ -99,14 +101,11 @@ public class ResourceCertificateTreeValidator {
 	 * @return ResourceCertificateTree of the trust anchor located by the tal
 	 */
 	public static ResourceCertificateTree withTALandPrefetchFilepath(String talFilepath, String prefetchFilepath){
-		TrustAnchorLocator tal = readTrustAnchorLocator(talFilepath);
+		TrustAnchorLocator tal = new TrustAnchorLocator(talFilepath);
 		PreFetcher preFetcher = new PreFetcher(prefetchFilepath);
 		return ResourceCertificateTreeValidator.withTAL(tal, preFetcher);
 	}
 
-	public static TrustAnchorLocator readTrustAnchorLocator(String filepath){
-		return null;
-	}
 
 	public static PreFetcher readPrefetchURIs(String filepath){
 		return null;
