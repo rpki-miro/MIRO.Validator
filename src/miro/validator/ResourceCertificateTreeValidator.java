@@ -88,27 +88,9 @@ public class ResourceCertificateTreeValidator {
 	 * @param talFilepath Path of a trust anchor locator file
 	 * @return ResourceCertificateTree of the trust anchor located by the tal
 	 */
-	public static ResourceCertificateTree withTALfilepath(String talFilepath){
+	public static ResourceCertificateTree withTALfilepath(String talFilepath, PreFetcher preFetcher){
 		TrustAnchorLocator tal = new TrustAnchorLocator(talFilepath);
-		return withTAL(tal, new PreFetcher());
-	}
-	
-	/**
-	 * Creates a ResourceCertificateTree with the path to a trust anchor locator file and a prefetch file. 
-	 * @param talFilepath Path of a trust anchor locator file
-	 * @param prefetchFilepath Path to a file that contains URIs that are to be prefetched before the actual
-	 *  fetching for the ResourceCertificateTree begins.
-	 * @return ResourceCertificateTree of the trust anchor located by the tal
-	 */
-	public static ResourceCertificateTree withTALandPrefetchFilepath(String talFilepath, String prefetchFilepath){
-		TrustAnchorLocator tal = new TrustAnchorLocator(talFilepath);
-		PreFetcher preFetcher = new PreFetcher(prefetchFilepath);
-		return ResourceCertificateTreeValidator.withTAL(tal, preFetcher);
-	}
-
-
-	public static PreFetcher readPrefetchURIs(String filepath){
-		return null;
+		return withTAL(tal, preFetcher);
 	}
 	
 	public static ResourceCertificateTree withTAL(TrustAnchorLocator tal, PreFetcher preFetcher){
@@ -166,16 +148,6 @@ public class ResourceCertificateTreeValidator {
 		return createResourceCertificateTree(taLocation, name, getTimestamp());
 	}
 
-	/* export path is temp until data model has been unified */
-	public ResourceCertificateTree getModelByTA(String taLocation, String name) {
-			/* Get name and time for the certificate tree */
-			name = name == null ? new File(taLocation).getName() : name;
-			String timestamp = getTimestamp();
-			
-			ResourceCertificateTree certTree = readAndValidate(taLocation, name, timestamp);
-			return certTree;
-	}
-	
 	public URI getTrustAnchorURI(String TALpath) {
 		File TALFile = new File(TALpath);
 		try {
@@ -265,37 +237,14 @@ public class ResourceCertificateTreeValidator {
 	    return new String(hexChars);
 	}
 
-	public static byte[] getHash(String path) throws IOException{
-		byte[] result_bytes = null;
-		byte[] file_bytes;
-		try {
-			file_bytes = java.nio.file.Files.readAllBytes(Paths.get(path));
-			MessageDigest md;
-			md = MessageDigest.getInstance("SHA-256");
-			md.update(file_bytes);
-			result_bytes = md.digest();
-		} catch (NoSuchAlgorithmException e) {
-			log.log(Level.SEVERE,"Error: Could not find SHA-256 algorithm");
-		}
-		return result_bytes;
-	}
 	
 	public static String toPath(URI uri){
 		return BASE_DIR + uri.getHost()+uri.getPath();
 	}
 	
-	public static String getBaseDir(){
-		return BASE_DIR;
-	}
 
 	public ResourceCertificateTree getTree() {
 		return certTree;
-	}
-	
-	public String updateTA(String TALpath) {
-		TrustAnchorFetcher TAfetcher = new TrustAnchorFetcher(null);
-		String taPath = TAfetcher.fetchTA(TALpath,BASE_DIR);
-		return taPath;
 	}
 	
 	public void exportResourceCertificateTree(ExportType type, String filename){
