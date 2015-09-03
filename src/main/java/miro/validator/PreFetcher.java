@@ -31,11 +31,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.java.miro.validator.fetcher.RsyncDownloader;
+import main.java.miro.validator.fetcher.ObjectFetcher;
 
 public class PreFetcher {
 
-	private RsyncDownloader downloader;
+	private ObjectFetcher downloader;
 	
 	private List<URI> prefetchURIs = new ArrayList<URI>();
 	
@@ -55,10 +55,9 @@ public class PreFetcher {
 	}
 
 	public void preFetch() {
-		String destinationPath;
 		for(URI uri : prefetchURIs){
-			destinationPath = ResourceCertificateTreeValidator.toPath(uri);
-			downloader.downloadData(uri, destinationPath);
+			//TODO maybe logging here? Or somewhere else..
+			ObjectFetcher.downloadData(uri);
 		}
 	}
 	

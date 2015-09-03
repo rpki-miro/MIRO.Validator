@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.net.URI;
 import java.util.Arrays;
 
+import main.java.miro.validator.fetcher.DownloadResult;
+import main.java.miro.validator.fetcher.ObjectFetcher;
 import main.java.miro.validator.types.CertificateObject;
 
 
@@ -27,6 +29,11 @@ public class TrustAnchorLocator {
 	public TrustAnchorLocator(URI taLocation, byte[] subjectPubKeyInfo) {
 		trustAnchorLocation = taLocation;
 		subjectPublicKeyInfo = subjectPubKeyInfo;
+	}
+	
+	public void obtainTrustAnchor() {
+		DownloadResult dlResult = ObjectFetcher.downloadData(trustAnchorLocation);
+		
 	}
 
 	public CertificateObject getTrustAnchor() {

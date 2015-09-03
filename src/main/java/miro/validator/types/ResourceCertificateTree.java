@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import main.java.miro.validator.ResourceCertificateTreeValidator;
-import main.java.miro.validator.fetcher.RsyncDownloader;
+import main.java.miro.validator.fetcher.ObjectFetcher;
 import main.java.miro.validator.validation.ResourceCertificateLocatorImpl;
 import main.java.miro.validator.validation.TopDownValidator;
 import net.ripe.rpki.commons.crypto.CertificateRepositoryObject;

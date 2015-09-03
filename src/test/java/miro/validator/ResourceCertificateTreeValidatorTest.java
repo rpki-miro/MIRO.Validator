@@ -26,7 +26,7 @@ import java.io.File;
 import java.net.URI;
 
 import main.java.miro.validator.ResourceCertificateTreeValidator;
-import main.java.miro.validator.fetcher.RsyncDownloader;
+import main.java.miro.validator.fetcher.ObjectFetcher;
 
 public class ResourceCertificateTreeValidatorTest {
 

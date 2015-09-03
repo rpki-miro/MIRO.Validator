@@ -46,12 +46,13 @@ import java.util.logging.Logger;
 import main.java.miro.validator.export.ExportType;
 import main.java.miro.validator.export.IRepositoryExporter;
 import main.java.miro.validator.export.json.JsonExporter;
-import main.java.miro.validator.fetcher.RsyncDownloader;
-import main.java.miro.validator.fetcher.TrustAnchorFetcher;
+import main.java.miro.validator.fetcher.ObjectFetcher;
 import main.java.miro.validator.logging.RepositoryLogging;
 import main.java.miro.validator.stats.ResultExtractor;
 import main.java.miro.validator.stats.types.RPKIRepositoryStats;
+import main.java.miro.validator.types.CRLObject;
 import main.java.miro.validator.types.CertificateObject;
+import main.java.miro.validator.types.ManifestObject;
 import main.java.miro.validator.types.RepositoryObject;
 import main.java.miro.validator.types.RepositoryObjectFactory;
 import main.java.miro.validator.types.ResourceCertificateTree;
@@ -75,12 +76,12 @@ public class ResourceCertificateTreeValidator {
 	
 	private List<String> prefetched;
 	
-	private RsyncDownloader downloader;
+	private ObjectFetcher downloader;
 
 	public ResourceCertificateTreeValidator(String baseDir) {
 		BASE_DIR = baseDir;
 		prefetched = new ArrayList<String>();
-		downloader = new RsyncDownloader();
+		downloader = new ObjectFetcher();
 	}
 	
 	/**
@@ -118,8 +119,14 @@ public class ResourceCertificateTreeValidator {
 
 		List<CertificateObject> certificateChildren;
 		CertificateObject certificate;
+		ManifestObject manifest;
+		CRLObject crl;
 		while(!workingQueue.isEmpty()){
 			certificate = workingQueue.poll();
+			//Get Manifest
+			certificate.getCertificate().getManifestUri();
+			//Get CRL
+			//Get ResourceHoldingObjects(certs/roas)
 			certificate = getChildren(certificate,preFetcher);
 			certificateChildren = getCertificateObjects(certificate.getChildren());
 			workingQueue.addAll(certificateChildren);
@@ -142,6 +149,13 @@ public class ResourceCertificateTreeValidator {
 	public static List<CertificateObject> getCertificateObjects(
 			List<ResourceHoldingObject> children) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public static ManifestObject getManifestObject(URI mftUri) {
+		//Fetch it (Fetcher Object)
+		//Read it (Static factory) handles null case
+		//return
 		return null;
 	}
 
@@ -204,6 +218,7 @@ public class ResourceCertificateTreeValidator {
 		String result = toPath(desc);
 		if(wasPrefetched(desc))
 			return 0;
-		return downloader.downloadData(desc,result);
+		downloader.downloadData(desc);
+		return 0;
 	}
 }
