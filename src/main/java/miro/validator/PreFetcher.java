@@ -55,8 +55,10 @@ public class PreFetcher {
 	}
 
 	public void preFetch() {
+		String destinationPath;
 		for(URI uri : prefetchURIs){
-		//TODO fetch stuff	
+			destinationPath = ResourceCertificateTreeValidator.toPath(uri);
+			downloader.downloadData(uri, destinationPath);
 		}
 	}
 	

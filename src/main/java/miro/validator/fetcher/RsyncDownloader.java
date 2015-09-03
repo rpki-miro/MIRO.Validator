@@ -106,7 +106,6 @@ public class RsyncDownloader {
 		rsync.addOptions("-a", "-v");
 		log.log(Level.INFO, "Fetching {0}", source);
 		int rtval = rsync.execute();
-//		int rtval = 0;
 		log.log(Level.FINE,
 				"Rsync: Source {0} , Dest. {1}, Duration {2}",
 				new Object[] { rsync.getSource(), rsync.getDestination(),
