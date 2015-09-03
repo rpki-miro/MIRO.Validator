@@ -97,6 +97,7 @@ public class ResourceCertificateTreeValidator {
 		CertificateObject trustAnchor = tal.getTrustAnchor();
 		preFetcher.preFetch();
 		trustAnchor = populate(trustAnchor,preFetcher);
+		//validate
 		ResourceCertificateTree tree = ResourceCertificateTree.withTrustAnchor(trustAnchor);
 		return tree;
 	}
@@ -143,89 +144,6 @@ public class ResourceCertificateTreeValidator {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public ResourceCertificateTree getTreeWithTAL(String talLocation, String name) {
-		URI taLocation = getTrustAnchorURI(talLocation);
-		return createResourceCertificateTree(taLocation, name, getTimestamp());
-	}
-
-	public URI getTrustAnchorURI(String TALpath) {
-		File TALFile = new File(TALpath);
-		try {
-			BufferedReader br  = new BufferedReader(new FileReader(TALFile));
-			String line = br.readLine();
-			br.close();
-			return URI.create(line);
-		} catch (Exception e) {
-			log.log(Level.SEVERE, "Could not read TAL at {0}", TALpath);
-			log.log(Level.SEVERE, e.toString(), e);
-			return null;
-		}
-	}
-	
-
-	public CertificateObject createTrustAnchor(String taLocation, ValidationResult result) {
-		
-		CertificateObject trustAnchor = null; 
-		try {
-			trustAnchor = RepositoryObjectFactory.createCertificateObject(taLocation, result);
-		} catch (Exception e) {
-			log.log(Level.SEVERE,e.toString(),e);
-			log.log(Level.SEVERE,"Could not read trust anchor {0}",taLocation);
-		}
-		return trustAnchor;
-	}
-	
-	
-	public ResourceCertificateTree createResourceCertificateTree(URI taLocation, String name, String ts) {
-		RepositoryObjectFactory.clearResourceObjectsMap();
-		
-		/* Get the trust anchor first*/
-		String taPath = downloader.fetchObject(taLocation, BASE_DIR);
-		
-		
-		ValidationResult result = ValidationResult.withLocation(taPath);
-		CertificateObject trustAnchor = createTrustAnchor(taPath, result);
-		trustAnchor.setRemoteLocation(taLocation); 
-		
-		
-		ResourceCertificateTree tree = new ResourceCertificateTree(this, name, trustAnchor, result, ts, BASE_DIR);
-		tree.populate();
-		tree.validate();
-		tree.extractValidationResults();
-		certTree = tree;
-		return certTree;
-	}
-	
-	public ResourceCertificateTree readAndValidate(String taLocation, String name, String ts) {
-		RepositoryObjectFactory.clearResourceObjectsMap();
-		
-		/* Get the trust anchor first*/
-		ValidationResult result = ValidationResult.withLocation(taLocation);
-		
-		
-		CertificateObject ta = createTrustAnchor(taLocation, result);
-		
-		ResourceCertificateTree tree = new ResourceCertificateTree(this, name, ta, result, ts, BASE_DIR);
-		tree.populate();
-		tree.validate();
-		tree.extractValidationResults();
-		certTree = tree;
-		return certTree;
-	}
-
-	public void preFetch(URI[] uris) {
-		log.log(Level.INFO, "Prefetching...");
-		String destination;
-		for(URI uri : uris){
-			destination = RsyncDownloader.getRelativePath(uri, BASE_DIR);
-			if(downloader.downloadData(uri.toString(), destination) == 0 ){
-				prefetched.add(uri.toString());
-			}
-			
-		}
-		log.log(Level.INFO, "Done prefetching..");
-	}
-	
 
 	public static String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
@@ -272,12 +190,6 @@ public class ResourceCertificateTreeValidator {
 		RepositoryLogging.logTime(exportStart, exportEnd, "Exporting ");
 	}
 
-	private String getTimestamp() {
-		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS zzz");
-		f.setTimeZone(TimeZone.getTimeZone("UTC"));
-		return f.format(new Date());
-	}
-	
 	public boolean wasPrefetched(URI uri){
 		String descStr = uri.toString();
 		for(String prefetchedLocation : prefetched) {

@@ -63,18 +63,18 @@ public class ValidatorMain {
 		
 		readArguments(args);
 		
-		ResourceCertificateTreeValidator treeValidator = new ResourceCertificateTreeValidator(BASE_DIR);
-		treeValidator.readAndValidate(TA_LOCATION, REPO_NAME, TIMESTAMP);
-		if(EXPORT){
-			treeValidator.exportResourceCertificateTree(EXPORT_TYPE, EXPORT_FILE);
-		}
-		
-		if(STATS){
-			ResultExtractor extractor = new ResultExtractor(treeValidator.getTree());
-			extractor.count();
-			RPKIRepositoryStats stats = extractor.getRPKIRepositoryStats();
-			ResultExtractor.archiveStats(stats, STATS_DIR);
-		}
+//		ResourceCertificateTreeValidator treeValidator = new ResourceCertificateTreeValidator(BASE_DIR);
+//		treeValidator.readAndValidate(TA_LOCATION, REPO_NAME, TIMESTAMP);
+//		if(EXPORT){
+//			treeValidator.exportResourceCertificateTree(EXPORT_TYPE, EXPORT_FILE);
+//		}
+//		
+//		if(STATS){
+//			ResultExtractor extractor = new ResultExtractor(treeValidator.getTree());
+//			extractor.count();
+//			RPKIRepositoryStats stats = extractor.getRPKIRepositoryStats();
+//			ResultExtractor.archiveStats(stats, STATS_DIR);
+//		}
 	}
 
 
