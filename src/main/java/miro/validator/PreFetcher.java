@@ -127,6 +127,14 @@ public class PreFetcher {
 		}
 		return !alreadyContained;
 	}
+
+	public boolean wasPrefetched(URI uri){
+		for(URI pfUri : prefetchURIs) {
+			if(pfUri.getHost().equals(uri.getHost()) && uri.getPath().startsWith(pfUri.getPath()))
+				return true;
+		}
+		return false;
+	}
 	
 	public List<URI> getPrefetchURIs() {
 		return prefetchURIs;
