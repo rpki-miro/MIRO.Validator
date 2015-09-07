@@ -90,6 +90,7 @@ public class ResourceCertificateTreeValidator {
 			//TODO handle null object return, same prob as in factory
 			return null;
 		}
+		log.log(Level.INFO, "Creating ResourceCertificateTree with "+ tal.getTrustAnchorLocation());
 		DateTime timestamp = new DateTime();
 		fetcher.prePopulate();
 		trustAnchor = populate(trustAnchor);
