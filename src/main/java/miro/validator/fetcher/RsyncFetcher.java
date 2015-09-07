@@ -107,6 +107,8 @@ public class RsyncFetcher implements ObjectFetcher{
 			String line;
 			URI uri;
 			while((line = br.readLine()) != null){
+				if(!line.startsWith("rsync://"))
+					continue;
 				uri = URI.create(line);
 				addPrefetchURI(uri);
 			}
@@ -142,6 +144,8 @@ public class RsyncFetcher implements ObjectFetcher{
 	}
 	
 	public boolean addPrefetchURI(URI pfUri) {
+		if(pointsToFile(pfUri))
+			return false;
 		List<URI> toBeRemoved = new ArrayList<URI>();
 		boolean alreadyContained = false;
 		for(URI uri : prefetchURIs) {
@@ -161,11 +165,18 @@ public class RsyncFetcher implements ObjectFetcher{
 		return !alreadyContained;
 	}
 	
+	private boolean pointsToFile(URI uri) {
+		for(String suffix : new String[]{".cer", ".mft", ".roa", ".crl", ".gbr"}){
+			if(uri.toString().endsWith(suffix))
+				return true;
+		}
+		return false;
+	}
+	
 	private void clearDirectory(){
 		try {
 			FileUtils.cleanDirectory(new File(baseDirectory));
 		} catch (Exception e) {
-			
 			//TODO maybe runtime exception?
 			e.printStackTrace();
 		}
