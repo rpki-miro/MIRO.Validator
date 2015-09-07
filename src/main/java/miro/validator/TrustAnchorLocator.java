@@ -6,8 +6,9 @@ import java.net.URI;
 import java.util.Arrays;
 
 import main.java.miro.validator.fetcher.DownloadResult;
-import main.java.miro.validator.fetcher.ObjectFetcher;
+import main.java.miro.validator.fetcher.RsyncFetcher;
 import main.java.miro.validator.types.CertificateObject;
+import main.java.miro.validator.types.RepositoryObjectFactory;
 
 
 //https://tools.ietf.org/html/rfc6490
@@ -17,13 +18,19 @@ public class TrustAnchorLocator {
 	
 	private byte[] subjectPublicKeyInfo;
 	
-	private CertificateObject trustAnchor;
-	
+	private String name;
+
 	public TrustAnchorLocator(String filepath) {
 		File TALFile = new File(filepath);
 		byte[] talBytes = readBytesFromFile(TALFile);
 		trustAnchorLocation = getURIfromTALbytes(talBytes);
 		subjectPublicKeyInfo = getSubjectPubKeyInfoFromTALbytes(talBytes);
+		deriveName(filepath);
+	}
+	
+	public TrustAnchorLocator(String filepath, String name) {
+		this(filepath);
+		this.name = name;
 	}
 	
 	public TrustAnchorLocator(URI taLocation, byte[] subjectPubKeyInfo) {
@@ -31,15 +38,6 @@ public class TrustAnchorLocator {
 		subjectPublicKeyInfo = subjectPubKeyInfo;
 	}
 	
-	public void obtainTrustAnchor() {
-		DownloadResult dlResult = ObjectFetcher.downloadData(trustAnchorLocation);
-		
-	}
-
-	public CertificateObject getTrustAnchor() {
-		return trustAnchor;
-	}
-
 	private static byte[] readBytesFromFile(File tALFile) {
 		try {
 			FileInputStream stream = new FileInputStream(tALFile);
@@ -83,6 +81,13 @@ public class TrustAnchorLocator {
 		}
 		return -1;
 	}
+	
+	private void deriveName(String filepath) {
+		File f = new File(filepath);
+		name = f.getName();
+		if(name.endsWith(".tal"))
+			name = name.substring(0, name.length() - 4);
+	}
 
 	public URI getTrustAnchorLocation() {
 		return trustAnchorLocation;
@@ -90,6 +95,10 @@ public class TrustAnchorLocator {
 
 	public byte[] getSubjectPublicKeyInfo() {
 		return subjectPublicKeyInfo;
+	}
+	
+	public String getName() {
+		return name;
 	}
 
 }
