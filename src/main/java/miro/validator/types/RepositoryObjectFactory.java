@@ -162,19 +162,32 @@ public class RepositoryObjectFactory {
 		return null;
 	}
 	
-	public static ResourceHoldingObject createResourceHoldingObject(String pth, ValidationResult result, ResourceHoldingObject p) throws Exception{
-		File file = new File(pth);
-		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
+	public static ResourceHoldingObject createResourceHoldingObjectWithParent(String pth, ResourceHoldingObject p) {
+		try {
+			File file = new File(pth);
+			ValidationResult result = ValidationResult.withLocation(pth);
+			CertificateRepositoryObject obj;
+			obj = readCertificateRepositoryObjectFile(file, result);
+			if (obj instanceof X509ResourceCertificate) {
+				return createCertificateObjectWithParent(pth, file.getName(),
+						(X509ResourceCertificate) obj, p);
+			}
 
-		
-		if(obj instanceof X509ResourceCertificate){
-			return createCertificateObjectWithParent(pth, file.getName(), (X509ResourceCertificate) obj,p);
+			if (obj instanceof RoaCms) {
+				return createRoaObjectWithParent(pth, file.getName(), (RoaCms)obj, p);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			//TODO logging
 		}
-		
-		if(obj instanceof RoaCms) {
-			return createRoaObject(pth);
-		}
-		throw new IllegalArgumentException("Invalid ResourceHoldingObject "+file.getName());
+		return null;
+	}
+	
+	public static RoaObject createRoaObjectWithParent(String pth, String name, RoaCms roa, ResourceHoldingObject p) {
+		RoaObject result = new RoaObject(pth, name, roa, p);
+		//TODO resourceMap?
+		return result;
 	}
 	
 	public static CertificateObject createCertificateObjectWithParent(String path, String fname, X509ResourceCertificate cert, ResourceHoldingObject p){
@@ -182,9 +195,6 @@ public class RepositoryObjectFactory {
 		resourceObjects.put(cert, result);
 		return result;
 	}
-	
-	
-	
 
 	public static byte[] getHash(String path) throws Exception{
 		byte[] result_bytes = null;

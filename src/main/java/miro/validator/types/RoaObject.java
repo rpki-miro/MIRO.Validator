@@ -59,6 +59,7 @@ public class RoaObject extends ResourceHoldingObject {
 	
 	public RoaObject(String pth, String name, RoaCms r, ResourceHoldingObject p){
 		this(pth,name,r);
+		parent = p;
 		//TODO eeCerts parent..?
 		this.eeCert = RepositoryObjectFactory.createCertificateObjectWithParent(pth, name, roa.getCertificate(), p);
 	}
