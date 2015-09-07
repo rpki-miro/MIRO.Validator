@@ -53,20 +53,8 @@ public class RepositoryObjectFactory {
 	public static void clearResourceObjectsMap() {
 		resourceObjects = new HashMap<X509ResourceCertificate, ResourceHoldingObject>();
 	}
-	//TODO Deal with mft
-	public static RepositoryObject createRepositoryObject(String path) {
-		if(path.endsWith(".cer"))
-			return createCertificateObject(path);
-		if(path.endsWith(".roa"))
-			return createRoaObject(path);
-		if(path.endsWith(".crl"))
-			return createCRLObject(path);
-		return null;
 
-	}
-	
 	private static CertificateRepositoryObject readCertificateRepositoryObjectFile(File file, ValidationResult validationResult) throws Exception {
-		
 		byte[] contents;
 		CertificateRepositoryObject obj = null;
 		contents = Files.toByteArray(file);
@@ -93,13 +81,9 @@ public class RepositoryObjectFactory {
 	//TODO these fac functions are nearly identical, need to make them polymorphic
 	public static CertificateObject createCertificateObject(String pth) {
 		try {
-			File file = new File(pth);
-			ValidationResult result = ValidationResult.withLocation(pth);
-			CertificateRepositoryObject obj;
-			obj = readCertificateRepositoryObjectFile(file, result);
+			CertificateRepositoryObject obj = createCertificateRepositoryObject(pth);
 			if (obj instanceof X509ResourceCertificate) {
-				CertificateObject cw = new CertificateObject(pth,
-						file.getName(), (X509ResourceCertificate) obj);
+				CertificateObject cw = new CertificateObject(pth,getFilename(pth), (X509ResourceCertificate) obj);
 				resourceObjects.put((X509ResourceCertificate) obj, cw);
 				return cw;
 			}
@@ -113,48 +97,30 @@ public class RepositoryObjectFactory {
 	//TODO these fac functions are nearly identical, need to make them polymorphic
 	public static ManifestObject createManifestObject(String path) {
 		try {
-			File file = new File(path);
-			ValidationResult result = ValidationResult.withLocation(path);
-			CertificateRepositoryObject obj;
-			obj = readCertificateRepositoryObjectFile(file, result);
-			if (obj instanceof ManifestCms) {
-				return new ManifestObject(path, file.getName(),
-						(ManifestCms) obj);
-			}
+			CertificateRepositoryObject obj = createCertificateRepositoryObject(path);
+			if (obj instanceof ManifestCms)
+				return new ManifestObject(path, getFilename(path),(ManifestCms) obj);
 		} catch (Exception e) {
 			e.printStackTrace();
-			//TODO logging
+			//TODO log
 		}
 		return null;
 	}
 	
-	//TODO these fac functions are nearly identical, need to make them polymorphic
-	public static RoaObject createRoaObject(String path) {
-		try {
-			File file = new File(path);
-			ValidationResult result = ValidationResult.withLocation(path);
-			CertificateRepositoryObject obj;
-			obj = readCertificateRepositoryObjectFile(file, result);
-			if (obj instanceof RoaCms) {
-				return new RoaObject(path, file.getName(), (RoaCms) obj);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			//TODO logging
-		}
-		return null;
+	public static CertificateRepositoryObject createCertificateRepositoryObject(String path) throws Exception {
+		File file = new File(path);
+		ValidationResult result = ValidationResult.withLocation(path);
+		CertificateRepositoryObject obj;
+		obj = readCertificateRepositoryObjectFile(file, result);
+		return obj;
 	}
 	
 	//TODO these fac functions are nearly identical, need to make them polymorphic
 	public static CRLObject createCRLObject(String path) {
 		try {
-			File file = new File(path);
-			ValidationResult result = ValidationResult.withLocation(path);
-			CertificateRepositoryObject obj;
-			obj = readCertificateRepositoryObjectFile(file, result);
-			if (obj instanceof X509Crl) {
-				return new CRLObject(path, file.getName(), (X509Crl) obj);
-			}
+			CertificateRepositoryObject obj = createCertificateRepositoryObject(path);
+			if (obj instanceof X509Crl)
+				return new CRLObject(path, getFilename(path), (X509Crl) obj);
 		} catch (Exception e) {
 			e.printStackTrace();
 			//TODO logging
@@ -164,19 +130,11 @@ public class RepositoryObjectFactory {
 	
 	public static ResourceHoldingObject createResourceHoldingObjectWithParent(String pth, ResourceHoldingObject p) {
 		try {
-			File file = new File(pth);
-			ValidationResult result = ValidationResult.withLocation(pth);
-			CertificateRepositoryObject obj;
-			obj = readCertificateRepositoryObjectFile(file, result);
-			if (obj instanceof X509ResourceCertificate) {
-				return createCertificateObjectWithParent(pth, file.getName(),
-						(X509ResourceCertificate) obj, p);
-			}
-
-			if (obj instanceof RoaCms) {
-				return createRoaObjectWithParent(pth, file.getName(), (RoaCms)obj, p);
-			}
-			
+			CertificateRepositoryObject obj = createCertificateRepositoryObject(pth);
+			if (obj instanceof X509ResourceCertificate)
+				return createCertificateObjectWithParent(pth, getFilename(pth),(X509ResourceCertificate) obj, p);
+			if (obj instanceof RoaCms)
+				return createRoaObjectWithParent(pth, getFilename(pth), (RoaCms)obj, p);
 		} catch (Exception e) {
 			e.printStackTrace();
 			//TODO logging
@@ -209,6 +167,10 @@ public class RepositoryObjectFactory {
 			log.log(Level.SEVERE,"Error: Could not find SHA-256 algorithm");
 		}
 		return result_bytes;
-		
+	}
+	
+	public static String getFilename(String path) {
+		File f = new File(path);
+		return f.getName();
 	}
 }
