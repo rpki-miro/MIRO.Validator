@@ -10,3 +10,9 @@ bin/
 build.properties
 META-INF/
 
+
+#Test
+src/test/resources/fetcher/prefetching/RIPE*
+src/test/resources/fetcher/prefetching/ARIN*
+src/test/resources/fetcher/prefetching/LACNIC*
+src/test/resources/fetcher/repository/*
