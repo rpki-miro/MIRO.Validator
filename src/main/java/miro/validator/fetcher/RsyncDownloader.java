@@ -16,8 +16,8 @@ public class RsyncDownloader {
 		createDirectories(destination);
 		Rsync rsync = new Rsync(source, destination);
 		rsync.addOptions("-a", "-v");
-		rsync.execute();
 		log.log(Level.INFO, "Downloading {0}", source);
+		rsync.execute();
 		log.log(Level.FINE,
 				"Rsync: Source {0} , Dest. {1}, Duration {2}",
 				new Object[] { rsync.getSource(), rsync.getDestination(),
