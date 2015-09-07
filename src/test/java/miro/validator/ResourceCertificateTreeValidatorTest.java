@@ -23,6 +23,10 @@ THE SOFTWARE.
 package test.java.miro.validator;
 
 import static org.junit.Assert.*;
+
+import java.io.File;
+import java.nio.file.Files;
+
 import main.java.miro.validator.ResourceCertificateTreeValidator;
 import main.java.miro.validator.TrustAnchorLocator;
 import main.java.miro.validator.fetcher.ObjectFetcher;
@@ -36,6 +40,11 @@ public class ResourceCertificateTreeValidatorTest {
 //TODO need actual test certificates/roas/crls/mfts..
 	@Test
 	public void withTALTest(){
+		File destinationFile = new File("src/test/resources/fetcher/repository/");
+		try {
+			Files.createDirectories(destinationFile.getParentFile().toPath());
+		} catch (Exception e){ 
+		}
 		testWithTAL("RIPE");
 		testWithTAL("ARIN");
 		testWithTAL("AFRINIC");
