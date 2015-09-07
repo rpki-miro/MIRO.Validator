@@ -105,6 +105,7 @@ public class ResourceCertificateTreeValidator {
 		CertificateObject trustAnchor = null;
 		if(dlResult.wasSuccessful()) {
 			trustAnchor = RepositoryObjectFactory.createCertificateObject(dlResult.getDestination());
+			trustAnchor.setRemoteLocation(trustAnchorLocation);
 			//TODO log here if trust anchor is null, for better debugging
 		} 
 		return trustAnchor;
@@ -178,9 +179,6 @@ public class ResourceCertificateTreeValidator {
 	public List<RepositoryObject> getIssuedObjects(CertificateObject certificate) {
 
 		DownloadResult dlResult;
-		File localPubPoint;
-		RepositoryObject object;
-		String[] suffixes = new String[]{".cer", ".crl", ".roa" };
 		List<RepositoryObject> objects = new ArrayList<RepositoryObject>();
 		for(X509CertificateInformationAccessDescriptor accessDescriptor : certificate.getCertificate().getSubjectInformationAccess()) {
 			if(!isPublishingPoint(accessDescriptor))
@@ -189,19 +187,35 @@ public class ResourceCertificateTreeValidator {
 			dlResult = fetcher.fetchObject(accessDescriptor.getLocation());
 			if(!dlResult.wasSuccessful())
 				continue;
-			
-			localPubPoint = new File(dlResult.getDestination());
-			String filepath;
-			for(String filename : localPubPoint.list(new RepositoryObjectFilenameFilter(suffixes))){
-				filepath = localPubPoint.getPath() + "/" + filename;
-				object = RepositoryObjectFactory.createRepositoryObject(filepath);
-				object.setRemoteLocation(accessDescriptor.getLocation());
-				if(isLegitimateIssuedObject(certificate, object))
-					objects.add(object);
-					
-			}
+			objects.addAll(readIssuedObjects(certificate,dlResult.getDestination(),accessDescriptor.getLocation()));
 		}
 		return objects;
+	}
+	
+	public List<RepositoryObject> readIssuedObjects(CertificateObject certificate, String location, URI remoteLocation) {
+		File localPubPoint;
+		RepositoryObject object;
+		String[] suffixes = new String[] { ".cer", ".crl", ".roa" };
+		localPubPoint = new File(location);
+		String filepath;
+		List<RepositoryObject> objects = new ArrayList<RepositoryObject>();
+		for (String filename : localPubPoint.list(new RepositoryObjectFilenameFilter(suffixes))) {
+			filepath = localPubPoint.getPath() + "/" + filename;
+			
+			if(filename.endsWith(".crl")){
+				object = RepositoryObjectFactory.createCRLObject(filepath);
+			} else 
+			if(filename.endsWith(".roa") || filename.endsWith(".cer")){
+				object = RepositoryObjectFactory.createResourceHoldingObjectWithParent(filepath, certificate);
+			} else {
+				continue;
+			}
+			object.setRemoteLocation(remoteLocation);
+			if (isLegitimateIssuedObject(certificate, object))
+				objects.add(object);
+		}
+		return objects;
+
 	}
 
 	public boolean isPublishingPoint(X509CertificateInformationAccessDescriptor accessDescriptor) {
