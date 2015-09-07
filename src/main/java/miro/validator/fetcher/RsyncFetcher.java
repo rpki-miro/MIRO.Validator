@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  * 
  * */
-package main.java.miro.validator;
+package main.java.miro.validator.fetcher;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,48 +30,82 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import main.java.miro.validator.fetcher.ObjectFetcher;
+import org.apache.commons.io.FileUtils;
 
-public class PreFetcher {
-
-	private ObjectFetcher downloader;
+public class RsyncFetcher implements ObjectFetcher{
 	
-	private List<URI> prefetchURIs = new ArrayList<URI>();
+	public static final Logger log = Logger.getGlobal();
+	
+	//TODO find better global solution for conf files
+	private static String PREFETCH_CONF_FILE = "/var/data/MIRO/Validator/prefetchURIs";
+	
+	private String baseDirectory;
+
+	private List<URI> prefetchURIs;
+	
+	private List<URI> downloadedURIs;
 	
 	private File prefetchURIstorage;
 	
-	private boolean writeToFile = false;
-
-	
-	public PreFetcher(String filepath) {
-		prefetchURIstorage = new File(filepath);
+	public RsyncFetcher(String baseDir, String prefetchFilepath) {
+		baseDirectory = baseDir;
+		clearDirectory();
+		prefetchURIs = new ArrayList<URI>();
+		downloadedURIs = new ArrayList<URI>();
+		PREFETCH_CONF_FILE = prefetchFilepath;
+		prefetchURIstorage = new File(PREFETCH_CONF_FILE);
 		readPrefetchURIsFromFile();
-		writeToFile = true;
 	}
 	
-	public PreFetcher() {
-		
+	public DownloadResult fetchObject(URI uri) {
+		addPrefetchURI(uri);
+		return fetchOObject(uri);
+	}
+	
+	//TODO rename
+	public DownloadResult fetchOObject(URI uri) {
+		String destination = getRelativePath(uri);
+		if(!alreadyDownloaded(uri)){
+			DownloadResult dlResult = new RsyncDownloader().downloadData(uri.toString(), destination);
+			if(dlResult.wasSuccessful())
+				downloadedURIs.add(uri);
+			return dlResult;
+		} else {
+			return new DownloadResult(uri.toString(), destination);
+		}
+	}
+
+	public String getRelativePath(URI uri){
+		return baseDirectory + uri.getHost() + uri.getPath();
+	}
+
+	public void prePopulate() {
+		preFetch();
+	}
+
+	public void postPopulate() {
+		writePrefetchURIsToFile();
 	}
 
 	public void preFetch() {
 		for(URI uri : prefetchURIs){
-			//TODO maybe logging here? Or somewhere else..
-			ObjectFetcher.downloadData(uri);
+			fetchOObject(uri);
 		}
 	}
 	
 	private void readPrefetchURIsFromFile() {
-		if(!prefetchURIstorage.canRead())
-			throw new RuntimeException("Cannot read " + prefetchURIstorage.getName());
-		
 		try {
+			prefetchURIstorage.createNewFile();
+			if(!prefetchURIstorage.canRead())
+				throw new RuntimeException("Cannot read " + prefetchURIstorage.getName());
 			BufferedReader br = new BufferedReader(new FileReader(prefetchURIstorage));
 			String line;
 			URI uri;
 			while((line = br.readLine()) != null){
 				uri = URI.create(line);
-				addURI(uri);
+				addPrefetchURI(uri);
 			}
 			br.close();
 		} catch(Exception e) {
@@ -81,9 +115,6 @@ public class PreFetcher {
 	}
 	
 	public void writePrefetchURIsToFile() {
-		if(!writeToFile)
-			return;
-		
 		try {
 			FileWriter writer = new FileWriter(prefetchURIstorage, false);
 			for(URI uri : prefetchURIs){
@@ -107,7 +138,7 @@ public class PreFetcher {
 		return !toBeRemoved.isEmpty();
 	}
 	
-	public boolean addURI(URI pfUri) {
+	public boolean addPrefetchURI(URI pfUri) {
 		List<URI> toBeRemoved = new ArrayList<URI>();
 		boolean alreadyContained = false;
 		for(URI uri : prefetchURIs) {
@@ -126,21 +157,30 @@ public class PreFetcher {
 		}
 		return !alreadyContained;
 	}
-
-	public boolean wasPrefetched(URI uri){
-		for(URI pfUri : prefetchURIs) {
-			if(pfUri.getHost().equals(uri.getHost()) && uri.getPath().startsWith(pfUri.getPath()))
+	
+	private void clearDirectory(){
+		try {
+			FileUtils.cleanDirectory(new File(baseDirectory));
+		} catch (Exception e) {
+			
+			//TODO maybe runtime exception?
+			e.printStackTrace();
+		}
+	}
+	
+	//TODO inefficient. whole class datastructure is inefficient. needs a longest char match alg
+	public boolean alreadyDownloaded(URI uri) {
+		String dlUriStr;
+		String uriStr = uri.toString();
+		for(URI dluri : downloadedURIs) {
+			dlUriStr = dluri.toString();
+			if(uriStr.startsWith(dlUriStr))
 				return true;
 		}
 		return false;
 	}
-	
+
 	public List<URI> getPrefetchURIs() {
 		return prefetchURIs;
 	}
-
-	public boolean isWriteToFile() {
-		return writeToFile;
-	}
-	
 }
