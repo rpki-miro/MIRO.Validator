@@ -21,6 +21,15 @@ public class DownloadResult {
 		destination = rsync.getDestination();
 		elapsedTime = rsync.elapsedTime();
 	}
+	
+	//TODO this is a special case DownloadResult. To be used when an object was already prefetched and rsync data wasn't saved
+	public DownloadResult(String s, String d) {
+		source = s;
+		destination = d;
+		success = true;
+		elapsedTime = 0;
+		rsyncRtval = 0;
+	}
 
 	public boolean wasSuccessful() {
 		return success;
