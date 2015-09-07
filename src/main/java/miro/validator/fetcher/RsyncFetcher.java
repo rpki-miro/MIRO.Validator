@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -61,11 +62,10 @@ public class RsyncFetcher implements ObjectFetcher{
 	
 	public DownloadResult fetchObject(URI uri) {
 		addPrefetchURI(uri);
-		return fetchOObject(uri);
+		return fetchObjectWithoutAdd(uri);
 	}
 	
-	//TODO rename
-	public DownloadResult fetchOObject(URI uri) {
+	public DownloadResult fetchObjectWithoutAdd(URI uri) {
 		String destination = getRelativePath(uri);
 		if(!alreadyDownloaded(uri)){
 			DownloadResult dlResult = new RsyncDownloader().downloadData(uri.toString(), destination);
@@ -73,6 +73,7 @@ public class RsyncFetcher implements ObjectFetcher{
 				downloadedURIs.add(uri);
 			return dlResult;
 		} else {
+			log.log(Level.FINE, "Skipped download of " + uri.toString());
 			return new DownloadResult(uri.toString(), destination);
 		}
 	}
@@ -90,9 +91,11 @@ public class RsyncFetcher implements ObjectFetcher{
 	}
 
 	public void preFetch() {
+		log.log(Level.INFO, "Prefetching..");
 		for(URI uri : prefetchURIs){
-			fetchOObject(uri);
+			fetchObjectWithoutAdd(uri);
 		}
+		log.log(Level.INFO, "Done with Prefetching");
 	}
 	
 	private void readPrefetchURIsFromFile() {

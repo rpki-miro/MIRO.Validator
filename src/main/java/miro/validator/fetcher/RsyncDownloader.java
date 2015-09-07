@@ -17,12 +17,11 @@ public class RsyncDownloader {
 		Rsync rsync = new Rsync(source, destination);
 		rsync.addOptions("-a", "-v");
 		rsync.execute();
-		log.log(Level.INFO, "Fetching {0}", source);
+		log.log(Level.INFO, "Downloading {0}", source);
 		log.log(Level.FINE,
 				"Rsync: Source {0} , Dest. {1}, Duration {2}",
 				new Object[] { rsync.getSource(), rsync.getDestination(),
 						rsync.elapsedTime() });
-		//TODO log DownloadResult instead
 		return new DownloadResult(rsync);
 	}
 

@@ -83,10 +83,10 @@ public class ResourceCertificateTreeValidator {
 		fetcher = fetc;
 	}
 	
-	
 	public ResourceCertificateTree withTAL(TrustAnchorLocator tal){
 		CertificateObject trustAnchor = obtainTrustAnchor(tal.getTrustAnchorLocation());
 		if(trustAnchor == null){
+			log.log(Level.SEVERE, "Could not obtain trust anchor at " + tal.getTrustAnchorLocation());
 			//TODO handle null object return, same prob as in factory
 			return null;
 		}
@@ -105,7 +105,7 @@ public class ResourceCertificateTreeValidator {
 		if(dlResult.wasSuccessful()) {
 			trustAnchor = RepositoryObjectFactory.createCertificateObject(dlResult.getDestination());
 			//TODO log here if trust anchor is null, for better debugging
-		}
+		} 
 		return trustAnchor;
 	}
 	
