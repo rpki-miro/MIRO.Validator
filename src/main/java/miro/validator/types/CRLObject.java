@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.security.auth.x500.X500Principal;
+
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
 import net.ripe.rpki.commons.crypto.crl.X509Crl;
 import net.ripe.rpki.commons.validation.ValidationCheck;
@@ -49,6 +51,16 @@ public class CRLObject extends RepositoryObject {
 
 	public X509Crl getCrl() {
 		return crl;
+	}
+
+	@Override
+	public X500Principal getIssuer() {
+		return crl.getIssuer();
+	}
+
+	@Override
+	public X500Principal getSubject() {
+		return null;
 	}
 
 }

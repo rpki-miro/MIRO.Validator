@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.x500.X500Principal;
+
 import net.ripe.rpki.commons.crypto.ValidityPeriod;
 import net.ripe.rpki.commons.crypto.cms.manifest.ManifestCms;
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
@@ -49,7 +51,6 @@ public class ManifestObject extends RepositoryObject{
 		manifest = mft;
 		validityPeriod = manifest.getValidityPeriod();
 	}
-	
 
 	public ManifestCms getManifest(){
 		return manifest;
@@ -61,6 +62,16 @@ public class ManifestObject extends RepositoryObject{
 
 	public Map<String, byte[]> getFiles() {
 		return manifest.getFiles();
+	}
+
+	@Override
+	public X500Principal getIssuer() {
+		return manifest.getCertificateIssuer();
+	}
+
+	@Override
+	public X500Principal getSubject() {
+		return manifest.getCertificateSubject();
 	}
 	
 	

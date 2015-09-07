@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.security.auth.x500.X500Principal;
+
 import net.ripe.rpki.commons.crypto.ValidityPeriod;
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
 import net.ripe.rpki.commons.validation.ValidationCheck;
@@ -38,7 +40,8 @@ import net.ripe.rpki.commons.validation.ValidationResult;
 import net.ripe.rpki.commons.validation.ValidationStatus;
 import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryObjectValidationContext;
 
-public class RepositoryObject {
+//TODO whole data model needs to be rethought..less extending more interfacing
+public abstract class RepositoryObject {
 	
 	public static final Logger log = Logger.getGlobal();
 		
@@ -53,6 +56,10 @@ public class RepositoryObject {
 	protected boolean isValid;
 	
 	protected URI remoteLocation;
+	
+	public abstract X500Principal getIssuer();
+	
+	public abstract X500Principal getSubject();
 	
 	public RepositoryObject(String pth, String name){
 		path = pth;

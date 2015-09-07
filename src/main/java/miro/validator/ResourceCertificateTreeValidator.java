@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -35,6 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,10 +45,14 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.joda.time.DateTime;
+
 import main.java.miro.validator.export.ExportType;
 import main.java.miro.validator.export.IRepositoryExporter;
 import main.java.miro.validator.export.json.JsonExporter;
+import main.java.miro.validator.fetcher.DownloadResult;
 import main.java.miro.validator.fetcher.ObjectFetcher;
+import main.java.miro.validator.fetcher.RsyncFetcher;
 import main.java.miro.validator.logging.RepositoryLogging;
 import main.java.miro.validator.stats.ResultExtractor;
 import main.java.miro.validator.stats.types.RPKIRepositoryStats;
@@ -57,6 +63,7 @@ import main.java.miro.validator.types.RepositoryObject;
 import main.java.miro.validator.types.RepositoryObjectFactory;
 import main.java.miro.validator.types.ResourceCertificateTree;
 import main.java.miro.validator.types.ResourceHoldingObject;
+import main.java.miro.validator.types.RoaObject;
 import main.java.miro.validator.validation.ResourceCertificateLocatorImpl;
 import main.java.miro.validator.validation.TopDownValidator;
 import net.ripe.rpki.commons.crypto.x509cert.X509CertificateInformationAccessDescriptor;
@@ -70,37 +77,36 @@ public class ResourceCertificateTreeValidator {
 	
 	public static final Logger log = Logger.getGlobal();
 	
-	public static String BASE_DIR;
-	
-	private ResourceCertificateTree certTree;
-	
-	private List<String> prefetched;
-	
-	private ObjectFetcher downloader;
+	private ObjectFetcher fetcher;
 
-	public ResourceCertificateTreeValidator(String baseDir) {
-		BASE_DIR = baseDir;
-		prefetched = new ArrayList<String>();
-		downloader = new ObjectFetcher();
+	public ResourceCertificateTreeValidator(ObjectFetcher fetc) {
+		fetcher = fetc;
 	}
 	
-	/**
-	 * Creates a ResourceCertificateTree with the path to a trust anchor locator file
-	 * @param talFilepath Path of a trust anchor locator file
-	 * @return ResourceCertificateTree of the trust anchor located by the tal
-	 */
-	public static ResourceCertificateTree withTALfilepath(String talFilepath, PreFetcher preFetcher){
-		TrustAnchorLocator tal = new TrustAnchorLocator(talFilepath);
-		return withTAL(tal, preFetcher);
-	}
 	
-	public static ResourceCertificateTree withTAL(TrustAnchorLocator tal, PreFetcher preFetcher){
-		CertificateObject trustAnchor = tal.getTrustAnchor();
-		preFetcher.preFetch();
-		trustAnchor = populate(trustAnchor,preFetcher);
+	public ResourceCertificateTree withTAL(TrustAnchorLocator tal){
+		CertificateObject trustAnchor = obtainTrustAnchor(tal.getTrustAnchorLocation());
+		if(trustAnchor == null){
+			//TODO handle null object return, same prob as in factory
+			return null;
+		}
+		DateTime timestamp = new DateTime();
+		fetcher.prePopulate();
+		trustAnchor = populate(trustAnchor);
+		fetcher.postPopulate();
 		//validate
-		ResourceCertificateTree tree = ResourceCertificateTree.withTrustAnchor(trustAnchor);
+		ResourceCertificateTree tree = new ResourceCertificateTree(tal.getName(), trustAnchor, timestamp);
 		return tree;
+	}
+
+	public CertificateObject obtainTrustAnchor(URI trustAnchorLocation) {
+		DownloadResult dlResult = fetcher.fetchObject(trustAnchorLocation);
+		CertificateObject trustAnchor = null;
+		if(dlResult.wasSuccessful()) {
+			trustAnchor = RepositoryObjectFactory.createCertificateObject(dlResult.getDestination());
+			//TODO log here if trust anchor is null, for better debugging
+		}
+		return trustAnchor;
 	}
 	
 	/**
@@ -111,52 +117,106 @@ public class ResourceCertificateTreeValidator {
 	 * @param preFetcher
 	 * @return
 	 */
-	public static CertificateObject populate(CertificateObject trustAnchor,
-			PreFetcher preFetcher) {
+	public CertificateObject populate(CertificateObject trustAnchor) {
 
 		Queue<CertificateObject> workingQueue = new LinkedList<CertificateObject>();
 		workingQueue.add(trustAnchor);
-
-		List<CertificateObject> certificateChildren;
+		
 		CertificateObject certificate;
-		ManifestObject manifest;
-		CRLObject crl;
 		while(!workingQueue.isEmpty()){
 			certificate = workingQueue.poll();
-			//Get Manifest
-			certificate.getCertificate().getManifestUri();
-			//Get CRL
-			//Get ResourceHoldingObjects(certs/roas)
-			certificate = getChildren(certificate,preFetcher);
-			certificateChildren = getCertificateObjects(certificate.getChildren());
-			workingQueue.addAll(certificateChildren);
+			workingQueue.addAll(populateCertificateObject(certificate));
 		}
 		return trustAnchor;
 	}
-
-	public static CertificateObject getChildren(
-			CertificateObject certificate, PreFetcher preFetcher) {
-		// TODO Auto-generated method stub
-		// For all publishing points:
-		// 1. Download pp (check with prefetcher)
-		// 2. Find manifest and set it
-		// 3. Find all files in manifest and set them (crl, children).
-		// 
-		// Once this is done with all publishing points, return the certificate
-		return null;
-	}
-
-	public static List<CertificateObject> getCertificateObjects(
-			List<ResourceHoldingObject> children) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	//TODO this method isn't good. whole populate process needs to be refactored at some point to be more clear
+	public List<CertificateObject> populateCertificateObject(CertificateObject certificate) {
+		List<RepositoryObject> issuedObjects;
+		List<CertificateObject> issuedCertificates = new ArrayList<CertificateObject>();
+		ArrayList<ResourceHoldingObject> issuedChildren = new ArrayList<ResourceHoldingObject>();
+		
+		ManifestObject manifest = obtainManifestObject(certificate.getCertificate().getManifestUri());
+		certificate.setManifest(manifest);
+		
+		issuedObjects = getIssuedObjects(certificate);
+		for(RepositoryObject obj : issuedObjects) {
+			
+			//TODO check staleness in case of multiple crls
+			if(obj instanceof CRLObject)
+				certificate.setCrl((CRLObject) obj);
+			
+			if(obj instanceof RoaObject)
+				issuedChildren.add((ResourceHoldingObject) obj);
+			
+			if(obj instanceof CertificateObject) {
+				issuedChildren.add((ResourceHoldingObject) obj);
+				issuedCertificates.add((CertificateObject) obj);
+			}
+		}
+		certificate.setChildren(issuedChildren);
+		return issuedCertificates;
 	}
 	
-	public static ManifestObject getManifestObject(URI mftUri) {
-		//Fetch it (Fetcher Object)
-		//Read it (Static factory) handles null case
-		//return
+	public ManifestObject obtainManifestObject(URI mftLocation) {
+		try {
+			DownloadResult result = fetcher.fetchObject(mftLocation);
+			if(result.wasSuccessful()){
+				ManifestObject manifest = RepositoryObjectFactory
+						.createManifestObject(result.getDestination());
+				manifest.setRemoteLocation(mftLocation);
+				return manifest;
+			}
+		} catch (Exception e) {
+			log.log(Level.WARNING, "Could not read manifest " + mftLocation.getPath());
+		}
+		//TODO again, same problem returning a null object
 		return null;
+	}
+
+	public List<RepositoryObject> getIssuedObjects(CertificateObject certificate) {
+
+		DownloadResult dlResult;
+		File localPubPoint;
+		RepositoryObject object;
+		String[] suffixes = new String[]{".cer", ".crl", ".roa" };
+		List<RepositoryObject> objects = new ArrayList<RepositoryObject>();
+		for(X509CertificateInformationAccessDescriptor accessDescriptor : certificate.getCertificate().getSubjectInformationAccess()) {
+			if(!isPublishingPoint(accessDescriptor))
+				continue;
+			
+			dlResult = fetcher.fetchObject(accessDescriptor.getLocation());
+			if(!dlResult.wasSuccessful())
+				continue;
+			
+			localPubPoint = new File(dlResult.getDestination());
+			String filepath;
+			for(String filename : localPubPoint.list(new RepositoryObjectFilenameFilter(suffixes))){
+				filepath = localPubPoint.getPath() + "/" + filename;
+				object = RepositoryObjectFactory.createRepositoryObject(filepath);
+				object.setRemoteLocation(accessDescriptor.getLocation());
+				if(isLegitimateIssuedObject(certificate, object))
+					objects.add(object);
+					
+			}
+		}
+		return objects;
+	}
+
+	public boolean isPublishingPoint(X509CertificateInformationAccessDescriptor accessDescriptor) {
+		return !accessDescriptor.getLocation().toString().endsWith(".mft");
+	}
+	
+	public boolean isLegitimateIssuedObject(CertificateObject parent, RepositoryObject child) {
+		boolean wasIssuedBy = false;
+		boolean isSelfSigned = false;
+		if(parent.getSubject().equals(child.getIssuer())){
+			wasIssuedBy = true;
+		}
+		if(child instanceof CertificateObject && ((CertificateObject)child).getSubject().equals(parent.getSubject())){
+			isSelfSigned = true;
+		}
+		return wasIssuedBy && !isSelfSigned;
 	}
 
 	public static String bytesToHex(byte[] bytes) {
@@ -167,58 +227,5 @@ public class ResourceCertificateTreeValidator {
 	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
 	    }
 	    return new String(hexChars);
-	}
-
-	
-	public static String toPath(URI uri){
-		return BASE_DIR + uri.getHost()+uri.getPath();
-	}
-	
-
-	public ResourceCertificateTree getTree() {
-		return certTree;
-	}
-	
-	public void exportResourceCertificateTree(ExportType type, String filename){
-		IRepositoryExporter exporter;
-		
-		long exportStart = System.nanoTime();
-		switch(type) {
-		
-		case JSON:
-			exporter = new JsonExporter(filename);
-			exporter.export(certTree);
-			break;
-			
-		case CVS:
-			break;
-			
-		case DB:
-			break;
-			
-		default:
-			break;
-		}
-		
-		long exportEnd = System.nanoTime();
-		RepositoryLogging.logTime(exportStart, exportEnd, "Exporting ");
-	}
-
-	public boolean wasPrefetched(URI uri){
-		String descStr = uri.toString();
-		for(String prefetchedLocation : prefetched) {
-			if(descStr.startsWith(prefetchedLocation)){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public int fetchURI(URI desc) {
-		String result = toPath(desc);
-		if(wasPrefetched(desc))
-			return 0;
-		downloader.downloadData(desc);
-		return 0;
 	}
 }

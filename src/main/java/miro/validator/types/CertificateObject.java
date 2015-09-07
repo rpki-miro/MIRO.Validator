@@ -93,18 +93,6 @@ public class CertificateObject extends ResourceHoldingObject {
 		this.resources = certificate.deriveResources(parent.getResources());
 	}
 	
-	public void findManifest(ValidationResult result){
-		URI mftUri = certificate.getManifestUri();
-		String path = ResourceCertificateTreeValidator.toPath(mftUri);
-		try {
-			manifest = RepositoryObjectFactory.createManifestObject(path, result);
-			manifest.setRemoteLocation(mftUri);
-		} catch (Exception e) {
-			log.log(Level.WARNING, "Could not read manifest " + path + " for " + getFilename());
-			return;
-		}
-	}
-	
 	public X500Principal getIssuer() {
 		return this.issuer;
 	}

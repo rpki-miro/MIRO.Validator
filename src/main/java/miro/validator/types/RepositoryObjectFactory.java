@@ -53,33 +53,113 @@ public class RepositoryObjectFactory {
 	public static void clearResourceObjectsMap() {
 		resourceObjects = new HashMap<X509ResourceCertificate, ResourceHoldingObject>();
 	}
+	//TODO Deal with mft
+	public static RepositoryObject createRepositoryObject(String path) {
+		if(path.endsWith(".cer"))
+			return createCertificateObject(path);
+		if(path.endsWith(".roa"))
+			return createRoaObject(path);
+		if(path.endsWith(".crl"))
+			return createCRLObject(path);
+		return null;
+
+	}
 	
 	private static CertificateRepositoryObject readCertificateRepositoryObjectFile(File file, ValidationResult validationResult) throws Exception {
 		
 		byte[] contents;
 		CertificateRepositoryObject obj = null;
 		contents = Files.toByteArray(file);
-		validationResult.setLocation(new ValidationLocation(file.getName()));
 		obj = CertificateRepositoryObjectFactory.createCertificateRepositoryObject(contents, validationResult);
 
 		if(obj instanceof UnknownCertificateRepositoryObject){
 			throw new Exception("Unknown object " + file.getName());
 		}
-		
 		return obj;
 	}
 	
-	public static CertificateObject createCertificateObject(String pth, ValidationResult result) throws Exception {
-		
-		File file = new File(pth);
-		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
-		if(obj instanceof X509ResourceCertificate){
-			CertificateObject cw = new CertificateObject(pth, file.getName(), (X509ResourceCertificate) obj);
-			resourceObjects.put((X509ResourceCertificate)obj, cw);
-			return cw;
+	//TODO throw exception here, or return null, or return some status object (ObjectCreationResult ?)
+	/*
+	 * Options to handle objects:
+	 * 
+	 * 1. Throw exception, return null, or return shallow special case object (shallow means it can't be handled like a 
+	 * normal object would, so requires checks as well, just like returning null and exception
+	 * 
+	 * 2. Create deep special case objects, that can be handled but are empty and have some indication that they are not 'real'
+	 * This means the objects could pass processing and validation without too many extra checks, but users have to remember to check 
+	 * 'realness' of objects so they don't draw wrong conclusions on object availability. Also might be very hard, since its complex
+	 * objects that can't easily be "faked" and still pass validation/
+	 */
+	//TODO these fac functions are nearly identical, need to make them polymorphic
+	public static CertificateObject createCertificateObject(String pth) {
+		try {
+			File file = new File(pth);
+			ValidationResult result = ValidationResult.withLocation(pth);
+			CertificateRepositoryObject obj;
+			obj = readCertificateRepositoryObjectFile(file, result);
+			if (obj instanceof X509ResourceCertificate) {
+				CertificateObject cw = new CertificateObject(pth,
+						file.getName(), (X509ResourceCertificate) obj);
+				resourceObjects.put((X509ResourceCertificate) obj, cw);
+				return cw;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//TODO logging
 		}
-		
-		throw new IllegalArgumentException("Invalid Certificate file "+file.getName());
+		return null;
+	}
+	
+	//TODO these fac functions are nearly identical, need to make them polymorphic
+	public static ManifestObject createManifestObject(String path) {
+		try {
+			File file = new File(path);
+			ValidationResult result = ValidationResult.withLocation(path);
+			CertificateRepositoryObject obj;
+			obj = readCertificateRepositoryObjectFile(file, result);
+			if (obj instanceof ManifestCms) {
+				return new ManifestObject(path, file.getName(),
+						(ManifestCms) obj);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//TODO logging
+		}
+		return null;
+	}
+	
+	//TODO these fac functions are nearly identical, need to make them polymorphic
+	public static RoaObject createRoaObject(String path) {
+		try {
+			File file = new File(path);
+			ValidationResult result = ValidationResult.withLocation(path);
+			CertificateRepositoryObject obj;
+			obj = readCertificateRepositoryObjectFile(file, result);
+			if (obj instanceof RoaCms) {
+				return new RoaObject(path, file.getName(), (RoaCms) obj);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//TODO logging
+		}
+		return null;
+	}
+	
+	//TODO these fac functions are nearly identical, need to make them polymorphic
+	public static CRLObject createCRLObject(String path) {
+		try {
+			File file = new File(path);
+			ValidationResult result = ValidationResult.withLocation(path);
+			CertificateRepositoryObject obj;
+			obj = readCertificateRepositoryObjectFile(file, result);
+			if (obj instanceof X509Crl) {
+				return new CRLObject(path, file.getName(), (X509Crl) obj);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//TODO logging
+		}
+		return null;
 	}
 	
 	public static ResourceHoldingObject createResourceHoldingObject(String pth, ValidationResult result, ResourceHoldingObject p) throws Exception{
@@ -92,7 +172,7 @@ public class RepositoryObjectFactory {
 		}
 		
 		if(obj instanceof RoaCms) {
-			return createRoaObject(pth,file.getName(),(RoaCms) obj,p);
+			return createRoaObject(pth);
 		}
 		throw new IllegalArgumentException("Invalid ResourceHoldingObject "+file.getName());
 	}
@@ -103,31 +183,8 @@ public class RepositoryObjectFactory {
 		return result;
 	}
 	
-	public static RoaObject createRoaObject(String path, String fname, RoaCms roa, ResourceHoldingObject p){
-		RoaObject result = new RoaObject(path, fname, roa,p);
-		resourceObjects.put(result.getCertificate(), result);
-		return result;
-	}
 	
-	public static ManifestObject createManifestObject(String path, ValidationResult result) throws Exception{
-		File file = new File(path);
-		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
-		
-		if(obj instanceof ManifestCms){
-			return new ManifestObject(path,file.getName(),(ManifestCms) obj);
-		}
-		throw new IllegalArgumentException("Invalid Manifest " + file.getName());
-	}
 	
-	public static CRLObject createCRLObject(String path, ValidationResult result) throws Exception{
-		File file = new File(path);
-		CertificateRepositoryObject obj = readCertificateRepositoryObjectFile(file, result);
-		
-		if(obj instanceof X509Crl){
-			return new CRLObject(path,file.getName(),(X509Crl) obj);
-		}
-		throw new IllegalArgumentException("Invalid CRL " + file.getName());
-	}
 
 	public static byte[] getHash(String path) throws Exception{
 		byte[] result_bytes = null;
