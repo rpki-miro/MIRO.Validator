@@ -95,7 +95,9 @@ public class ResourceCertificateTreeValidator {
 		fetcher.prePopulate();
 		trustAnchor = populate(trustAnchor);
 		fetcher.postPopulate();
-		//validate
+		TopDownValidator validator = new TopDownValidator(ValidationResult.withLocation(trustAnchor.getFilename()), 
+				new ResourceCertificateLocatorImpl(), trustAnchor);
+		validator.validate();
 		ResourceCertificateTree tree = new ResourceCertificateTree(tal.getName(), trustAnchor, timestamp);
 		return tree;
 	}

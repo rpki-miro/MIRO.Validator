@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.ripe.rpki.commons.validation.ValidationCheck;
+import net.ripe.rpki.commons.validation.ValidationLocation;
 import net.ripe.rpki.commons.validation.ValidationResult;
 import net.ripe.rpki.commons.validation.ValidationStatus;
 
@@ -82,7 +83,12 @@ public class ValidationResults {
 	 * @param newResult
 	 */
 	public static void transformToValidationResults(ValidationResults newResult, ValidationResult oldResult) {
-		List<ValidationCheck> allChecks = (ArrayList<ValidationCheck>) oldResult.getAllValidationChecksForCurrentLocation();
+		transformToValidationResultsWithLocation(newResult, oldResult, oldResult.getCurrentLocation());
+	}
+
+	public static void transformToValidationResultsWithLocation(ValidationResults newResult, ValidationResult oldResult,
+			ValidationLocation location ) {
+		List<ValidationCheck> allChecks = oldResult.getAllValidationChecksForLocation(location);
 		addValidationChecksToValidationResults(newResult, allChecks);
 	}
 	

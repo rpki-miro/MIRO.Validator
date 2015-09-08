@@ -58,6 +58,9 @@ public abstract class RepositoryObject {
 	public abstract X500Principal getIssuer();
 	
 	public abstract X500Principal getSubject();
+
+	public abstract void validate(CertificateRepositoryObjectValidationContext context, CrlLocator crlLocator, ValidationOptions options, 
+			ValidationResult result);
 	
 	public RepositoryObject(String name){
 		filename = name;
@@ -96,5 +99,6 @@ public abstract class RepositoryObject {
 	public String getFilename() {
 		return filename;
 	}
+	
 
 }

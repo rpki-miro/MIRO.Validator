@@ -34,6 +34,7 @@ import net.ripe.rpki.commons.crypto.ValidityPeriod;
 import net.ripe.rpki.commons.crypto.cms.manifest.ManifestCms;
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
 import net.ripe.rpki.commons.validation.ValidationCheck;
+import net.ripe.rpki.commons.validation.ValidationLocation;
 import net.ripe.rpki.commons.validation.ValidationOptions;
 import net.ripe.rpki.commons.validation.ValidationResult;
 import net.ripe.rpki.commons.validation.ValidationStatus;
@@ -72,6 +73,15 @@ public class ManifestObject extends RepositoryObject{
 	@Override
 	public X500Principal getSubject() {
 		return manifest.getCertificateSubject();
+	}
+
+	@Override
+	public void validate(CertificateRepositoryObjectValidationContext context,
+			CrlLocator crlLocator, ValidationOptions options,
+			ValidationResult result) {
+		manifest.validate(getFilename(), context, crlLocator, options, result);
+		ValidationResults.transformToValidationResultsWithLocation(getValidationResults(), 
+				result, new ValidationLocation(getFilename()));
 	}
 	
 	

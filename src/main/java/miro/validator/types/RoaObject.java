@@ -88,5 +88,15 @@ public class RoaObject extends ResourceHoldingObject {
 	public BigInteger getSerialNr() {
 		return eeCert.getSerialNr();
 	}
+
+	@Override
+	public void validate(CertificateRepositoryObjectValidationContext context,
+			CrlLocator crlLocator, ValidationOptions options,ValidationResult result) {
+		
+		roa.validate(getFilename(), context, crlLocator, options, result);
+		ValidationResults.transformToValidationResultsWithLocation(
+				getValidationResults(), result, new ValidationLocation(
+						getFilename()));
+	}
 	
 }

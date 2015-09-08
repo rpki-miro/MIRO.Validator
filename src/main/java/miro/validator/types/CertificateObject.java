@@ -45,6 +45,7 @@ import net.ripe.rpki.commons.crypto.crl.X509Crl;
 import net.ripe.rpki.commons.crypto.x509cert.X509CertificateInformationAccessDescriptor;
 import net.ripe.rpki.commons.crypto.x509cert.X509ResourceCertificate;
 import net.ripe.rpki.commons.validation.ValidationCheck;
+import net.ripe.rpki.commons.validation.ValidationLocation;
 import net.ripe.rpki.commons.validation.ValidationOptions;
 import net.ripe.rpki.commons.validation.ValidationResult;
 import net.ripe.rpki.commons.validation.ValidationStatus;
@@ -197,6 +198,15 @@ public class CertificateObject extends ResourceHoldingObject {
 		this.manifest = manifest;
 	}
 
-
-
+	@Override
+	public void validate(CertificateRepositoryObjectValidationContext context,
+			CrlLocator crlLocator, ValidationOptions options,
+			ValidationResult result) {
+		
+		
+		certificate.validate(getFilename(), context, crlLocator, options, result);
+		ValidationResults.transformToValidationResultsWithLocation(getValidationResults(), 
+				result, new ValidationLocation(getFilename()));
+		
+	}
 }

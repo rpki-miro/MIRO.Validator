@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,7 @@ import main.java.miro.validator.types.CertificateObject;
 import main.java.miro.validator.types.ManifestObject;
 import main.java.miro.validator.types.ResourceHoldingObject;
 import main.java.miro.validator.types.RoaObject;
+import main.java.miro.validator.types.ValidationResults;
 import net.ripe.rpki.commons.crypto.cms.manifest.ManifestCms;
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
 import net.ripe.rpki.commons.crypto.crl.X509Crl;
@@ -81,8 +83,12 @@ public class TopDownValidator {
 			result.warnIfNull(parent.getManifest(), "missing.manifest"); 
 			result.warnIfNull(parent.getCrl(), "missing.crl");
 		
-			validateManifest(parent.getManifest());
-			validateCrl(parent.getCrl());
+			if(parent.getManifest() != null)
+				parent.getManifest().validate(context, (CrlLocator) locator, options, result);
+			
+			if(parent.getCrl() != null)
+				parent.getCrl().validate(context, (CrlLocator) locator, options, result);
+			
 			
 			/* Validate children, e.g. CertificateObject, RoaObject */
 			/* This also adds the validated CertificateObjects to the workQueue */
@@ -90,26 +96,14 @@ public class TopDownValidator {
 		}
 		log.log(Level.INFO,"Validating done");
 	}
+
 	private void validateChildren(CertificateObject certWrapper) {
 		
-		ArrayList<ResourceHoldingObject> children = certWrapper.getChildren();
-		if(children == null || children.isEmpty()){
-			return;
-		}
-		
-		CertificateObject certBuf;
-		RoaObject roaBuf;
-		
-		
-		ManifestObject mftWrap = certWrapper.getManifest();
-		ManifestCms mft = null;
-		ArrayList<String> mftFilesCopy = null;
-		boolean checkMft = false;
-		if(mftWrap !=null){
-			mft = mftWrap.getManifest();
-			mftFilesCopy = new ArrayList<String>();
-			mftWrap.getManifest().getFileNames().addAll(mftFilesCopy);
-			checkMft = true;
+		boolean manifestIsPresent = false;
+		List<String> mftFiles = null;
+		if(certWrapper.getManifest() !=null){
+			mftFiles = getManifestFileListCopy(certWrapper);
+			manifestIsPresent = true;
 		}
 		
 		Iterator<ResourceHoldingObject> iter = certWrapper.getChildren().iterator();
@@ -117,61 +111,58 @@ public class TopDownValidator {
 		while(iter.hasNext()){
 			
 			kid = iter.next();
+			kid.validate(context, (CrlLocator) locator, options, result);
 			
-			if(kid instanceof CertificateObject){
-				certBuf = (CertificateObject) kid;
-				certBuf.getCertificate().validate(certBuf.getFilename(), context, (CrlLocator) locator, options, result);
-				workQueue.add(certBuf);
-			}
+			if(kid instanceof CertificateObject)
+				workQueue.add((CertificateObject) kid);
 			
-			if(kid instanceof RoaObject){
-				roaBuf = (RoaObject) kid;
-				roaBuf.getRoa().validate(roaBuf.getFilename(), context, (CrlLocator) locator, options, result);
-			}
-			
-			if(checkMft){
-				
-				/*Check if kid is mentioned in manifest*/
-				boolean isPresent = mft.containsFile(kid.getFilename());
-				result.warnIfFalse(isPresent, "missing.in.mft");
-				
-				/*Check if hash matches*/
-				if(isPresent){
-					byte[] kidHash = kid.getHash();
-					byte[] mftHash = mft.getHash(kid.getFilename());
-					boolean sameHash = Arrays.equals(kidHash, mftHash);
-					result.warnIfFalse(sameHash,"wrong.hash");
-				}
-				
-				mftFilesCopy.remove(kid.getFilename());
-				
-				/*Warn mft about missing files*/
-				if(!iter.hasNext()){
-					for(String missingFile : mftFilesCopy){
-						result.warnForLocation(new ValidationLocation(mftWrap.getFilename()), "missing.file", missingFile);
-					}
-				}
+			if(manifestIsPresent){
+				checkManifestForObject(certWrapper.getManifest(), kid);
+				mftFiles.remove(kid.getFilename());
+				if(!iter.hasNext())
+					warnAboutMissingFiles(certWrapper.getManifest(), mftFiles);
 			}
 		}
+	}
+	
+	public void checkManifestForObject(ManifestObject mft, ResourceHoldingObject obj) {
+		ManifestCms manifest = mft.getManifest();
+		/* Check if kid is mentioned in manifest */
+		boolean isPresent = manifest.containsFile(obj.getFilename());
+		result.warnIfFalse(isPresent, "missing.in.mft");
+
+		/* Check if hash matches */
+		if (isPresent) {
+			byte[] kidHash = obj.getHash();
+			boolean hashMatches = Arrays.equals(kidHash, manifest.getHash(obj.getFilename()));
+			result.warnIfFalse(hashMatches, "wrong.hash");
+		}
+	}
+	
+	public void warnAboutMissingFiles(ManifestObject mft, List<String> missingFiles) {
+		boolean changed = false;
+		for (String missingFile : missingFiles) {
+			result.warnForLocation(new ValidationLocation(mft.getFilename()), "missing.file", missingFile);
+			changed = true;
+		}
+		if(changed)
+			ValidationResults.transformToValidationResultsWithLocation(mft.getValidationResults(), result,
+						new ValidationLocation(mft.getFilename()));
+		
+	}
+	
+	public List<String> getManifestFileListCopy(CertificateObject cert) {
+		ManifestObject mft = cert.getManifest();
+		List<String> mftFilesCopy = new ArrayList<String>();
+		mftFilesCopy.addAll(mft.getManifest().getFileNames());
+		if(cert.getCrl() != null)
+			mftFilesCopy.remove(cert.getCrl().getFilename());
+		return mftFilesCopy;
 	}
 	
 
 	public ValidationResult getValidationResult() {
 		return result;
 	}
-	private void validateCrl(CRLObject crlWrap) {
-		if(crlWrap == null){
-			return;
-		}
-		X509Crl crl = crlWrap.getCrl();
-		crl.validate(crlWrap.getFilename(), context, (CrlLocator) locator, options, result);
-	}
 
-	private void validateManifest(ManifestObject mftWrap) {
-		if(mftWrap == null){
-			return;
-		}
-		ManifestCms mft = mftWrap.getManifest();
-		mft.validate(mftWrap.getFilename(), context, (CrlLocator) locator, options, result);
-	}
 }

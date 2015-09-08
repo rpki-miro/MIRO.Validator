@@ -34,6 +34,7 @@ import javax.security.auth.x500.X500Principal;
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
 import net.ripe.rpki.commons.crypto.crl.X509Crl;
 import net.ripe.rpki.commons.validation.ValidationCheck;
+import net.ripe.rpki.commons.validation.ValidationLocation;
 import net.ripe.rpki.commons.validation.ValidationOptions;
 import net.ripe.rpki.commons.validation.ValidationResult;
 import net.ripe.rpki.commons.validation.ValidationStatus;
@@ -60,6 +61,16 @@ public class CRLObject extends RepositoryObject {
 	@Override
 	public X500Principal getSubject() {
 		return null;
+	}
+
+	@Override
+	public void validate(CertificateRepositoryObjectValidationContext context,
+			CrlLocator crlLocator, ValidationOptions options,
+			ValidationResult result) {
+		crl.validate(getFilename(), context, crlLocator, options, result);
+		ValidationResults.transformToValidationResultsWithLocation(getValidationResults(), 
+				result, new ValidationLocation(getFilename()));
+		
 	}
 
 }
