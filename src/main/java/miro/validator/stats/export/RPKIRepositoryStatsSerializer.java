@@ -40,7 +40,7 @@ public class RPKIRepositoryStatsSerializer implements JsonSerializer<RPKIReposit
 		
 		JsonObject statsObj = new JsonObject();
 		statsObj.add("name", new JsonPrimitive(src.getName()));
-		statsObj.add("timestamp", new JsonPrimitive(src.getTimestamp()));
+		statsObj.add("timestamp", new JsonPrimitive(src.getTimestamp().toString()));
 		statsObj.add("trustAnchor", new JsonPrimitive(src.getTrustAnchor()));
 		statsObj.add("result", context.serialize(src.getResult()));
 		return statsObj;

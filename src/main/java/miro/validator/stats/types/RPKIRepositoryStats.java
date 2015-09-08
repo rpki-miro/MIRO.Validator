@@ -24,11 +24,13 @@ package main.java.miro.validator.stats.types;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 public class RPKIRepositoryStats {
 	
 	private String name;
 	
-	private String timestamp;
+	private DateTime timestamp;
 	
 	private String trustAnchor;
 	
@@ -36,7 +38,7 @@ public class RPKIRepositoryStats {
 	
 	private List<Result> hostResults;
 	
-	public RPKIRepositoryStats(String name, String timestamp, String trustAnchor, Result result, List<Result> hResults) {
+	public RPKIRepositoryStats(String name, DateTime timestamp, String trustAnchor, Result result, List<Result> hResults) {
 		this.name = name;
 		this.timestamp = timestamp;
 		this.trustAnchor = trustAnchor;
@@ -48,7 +50,7 @@ public class RPKIRepositoryStats {
 		return name;
 	}
 
-	public String getTimestamp() {
+	public DateTime getTimestamp() {
 		return timestamp;
 	}
 

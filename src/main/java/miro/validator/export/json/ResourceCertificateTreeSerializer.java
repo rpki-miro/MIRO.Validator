@@ -41,7 +41,7 @@ public class ResourceCertificateTreeSerializer implements JsonSerializer<Resourc
 		JsonObject treeJson = new JsonObject();
 		
 		treeJson.add("name", new JsonPrimitive(src.getName()));
-		treeJson.add("date", new JsonPrimitive(src.getTimeStamp()));
+		treeJson.add("date", new JsonPrimitive(src.getTimeStamp().toString()));
 		treeJson.add("trustAnchor", context.serialize(src.getTrustAnchor(), CertificateObject.class));
 		
 		
