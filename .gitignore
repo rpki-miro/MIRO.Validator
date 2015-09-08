@@ -12,6 +12,7 @@ META-INF/
 
 
 #Test
+src/test/resources/fetcher/prefetching/prefetchURIs
 src/test/resources/fetcher/prefetching/RIPE*
 src/test/resources/fetcher/prefetching/ARIN*
 src/test/resources/fetcher/prefetching/LACNIC*
