@@ -205,8 +205,11 @@ public class ResourceCertificateTreeValidator {
 			if(filename.endsWith(".crl")){
 				object = RepositoryObjectFactory.createCRLObject(filepath);
 			} else 
-			if(filename.endsWith(".roa") || filename.endsWith(".cer")){
-				object = RepositoryObjectFactory.createResourceHoldingObjectWithParent(filepath, certificate);
+			if(filename.endsWith(".roa")){
+				object = RepositoryObjectFactory.createRoaObjectWithParent(filepath, certificate);
+			} else 
+			if(filename.endsWith(".cer")){
+				object = RepositoryObjectFactory.createCertificateObjectWithParent(filepath, certificate);
 			} else {
 				continue;
 			}

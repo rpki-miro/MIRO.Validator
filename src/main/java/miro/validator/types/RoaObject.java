@@ -46,23 +46,22 @@ import net.ripe.rpki.commons.validation.ValidationStatus;
 import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryObjectValidationContext;
 
 public class RoaObject extends ResourceHoldingObject {
-	static final Logger log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	
 	private RoaCms roa;
 	
 	private CertificateObject eeCert;
 	
-	public RoaObject(String pth, String name, RoaCms r) {
-		super(pth, name, r.getCertificate());
+	public RoaObject(String name, RoaCms r) {
+		super(name, r.getCertificate());
 		this.roa = r;
 	}
 	
-	public RoaObject(String pth, String name, RoaCms r, ResourceHoldingObject p){
-		this(pth,name,r);
+	public RoaObject(String name, RoaCms r, CertificateObject p){
+		this(name,r);
 		parent = p;
 		//TODO eeCerts parent..?
+		this.eeCert = RepositoryObjectFactory.createCertificateObjectWithCertificateAndParent(name + "_eeCert" , roa.getCertificate(), p);
 		this.eeCert.validationResults = this.validationResults;
-		this.eeCert = RepositoryObjectFactory.createCertificateObjectWithParent(pth, name, roa.getCertificate(), p);
 	}
 	
 	public DateTime getSigningTime(){

@@ -40,12 +40,11 @@ import net.ripe.rpki.commons.validation.ValidationStatus;
 import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryObjectValidationContext;
 
 public class CRLObject extends RepositoryObject {
-	static final Logger log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	
 	private X509Crl crl;
 	
-	public CRLObject(String pth, String name, X509Crl list){
-		super(pth,name);
+	public CRLObject(String name, X509Crl list){
+		super(name);
 		this.crl = list;
 	}
 

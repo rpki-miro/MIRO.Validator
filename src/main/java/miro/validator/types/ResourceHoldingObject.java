@@ -58,14 +58,14 @@ public abstract class ResourceHoldingObject extends RepositoryObject {
 	
 	public abstract BigInteger getSerialNr();
 	
-	public ResourceHoldingObject(String path, String fname, X509ResourceCertificate cert){
-		super(path,fname);
+	public ResourceHoldingObject(String fname, X509ResourceCertificate cert){
+		super(fname);
 		this.certificate = cert;
 		validityPeriod = certificate.getValidityPeriod();
 	}
 	
-	public ResourceHoldingObject(String path, String fname, X509ResourceCertificate cert, ResourceHoldingObject p){
-		this(path,fname,cert);
+	public ResourceHoldingObject(String fname, X509ResourceCertificate cert, ResourceHoldingObject p){
+		this(fname,cert);
 		parent = p;
 	}
 	

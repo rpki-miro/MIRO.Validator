@@ -45,8 +45,6 @@ public abstract class RepositoryObject {
 	
 	public static final Logger log = Logger.getGlobal();
 		
-	private String path;
-		
 	protected String filename;
 	
 	protected ValidationResults validationResults;
@@ -61,15 +59,9 @@ public abstract class RepositoryObject {
 	
 	public abstract X500Principal getSubject();
 	
-	public RepositoryObject(String pth, String name){
-		path = pth;
+	public RepositoryObject(String name){
 		filename = name;
 		validationResults = new ValidationResults();
-		try {
-			this.hash = RepositoryObjectFactory.getHash(path);
-		} catch (Exception e) {
-			log.log(Level.SEVERE, "Error: Could not hash " + path);
-		}
 	}
 	
 	public ValidationResults getValidationResults() {

@@ -51,7 +51,6 @@ import net.ripe.rpki.commons.validation.ValidationStatus;
 import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryObjectValidationContext;
 
 public class CertificateObject extends ResourceHoldingObject {
-	static final Logger log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	
 	private BigInteger serialNr;
 	private X500Principal subject;
@@ -68,8 +67,8 @@ public class CertificateObject extends ResourceHoldingObject {
 	private CRLObject crl;
 	private ArrayList<ResourceHoldingObject> children;
 
-	public CertificateObject(String pth, String fname, X509ResourceCertificate cert) {
-		super(pth,fname,cert);
+	public CertificateObject(String fname, X509ResourceCertificate cert) {
+		super(fname,cert);
 		issuer = certificate.getIssuer();
 		subjectKeyIdentifier = certificate.getSubjectKeyIdentifier();
 		subject = certificate.getSubject();
@@ -87,8 +86,8 @@ public class CertificateObject extends ResourceHoldingObject {
 		} 
 	}
 	
-	public CertificateObject(String pth, String fname, X509ResourceCertificate cert, ResourceHoldingObject parent) {
-		this(pth,fname,cert);
+	public CertificateObject(String fname, X509ResourceCertificate cert, CertificateObject parent) {
+		this(fname,cert);
 		this.parent = parent;
 		this.resources = certificate.deriveResources(parent.getResources());
 	}

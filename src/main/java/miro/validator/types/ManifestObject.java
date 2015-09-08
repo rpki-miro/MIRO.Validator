@@ -46,8 +46,8 @@ public class ManifestObject extends RepositoryObject{
 	private ValidityPeriod validityPeriod;
 	
 	
-	public ManifestObject(String pth, String name, ManifestCms mft){
-		super(pth,name);
+	public ManifestObject(String name, ManifestCms mft){
+		super(name);
 		manifest = mft;
 		validityPeriod = manifest.getValidityPeriod();
 	}
