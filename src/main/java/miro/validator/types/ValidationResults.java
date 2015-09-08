@@ -83,12 +83,15 @@ public class ValidationResults {
 	 */
 	public static void transformToValidationResults(ValidationResults newResult, ValidationResult oldResult) {
 		List<ValidationCheck> allChecks = (ArrayList<ValidationCheck>) oldResult.getAllValidationChecksForCurrentLocation();
+		addValidationChecksToValidationResults(newResult, allChecks);
+	}
+	
+	public static void addValidationChecksToValidationResults(ValidationResults results, List<ValidationCheck> checks) {
+		List<ValidationCheck> passed = results.getPassed();
+		List<ValidationCheck> warning = results.getWarnings();
+		List<ValidationCheck> error = results.getErrors();
 		
-		List<ValidationCheck> passed = newResult.getPassed();
-		List<ValidationCheck> warning = newResult.getWarnings();
-		List<ValidationCheck> error = newResult.getErrors();
-		
-		for(ValidationCheck check : allChecks){
+		for(ValidationCheck check : checks){
 			switch(check.getStatus()){
 			case ERROR:
 				error.add(check);
@@ -103,6 +106,6 @@ public class ValidationResults {
 				break;
 			}
 		}
-		newResult.setValidationStatus();
+		results.setValidationStatus();
 	}
 }
