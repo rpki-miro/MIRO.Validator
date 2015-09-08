@@ -64,43 +64,12 @@ public abstract class RepositoryObject {
 	public RepositoryObject(String pth, String name){
 		path = pth;
 		filename = name;
+		validationResults = new ValidationResults();
 		try {
 			this.hash = RepositoryObjectFactory.getHash(path);
 		} catch (Exception e) {
 			log.log(Level.SEVERE, "Error: Could not hash " + path);
 		}
-	}
-	
-	public void extractOwnResults(ValidationResult result) {
-		ArrayList<ValidationCheck> allChecks = (ArrayList<ValidationCheck>) result.getAllValidationChecksForLocation(new ValidationLocation(filename));
-		
-		HashMap<ValidationStatus, ArrayList<ValidationCheck>> validationRes = new HashMap<ValidationStatus, ArrayList<ValidationCheck>>();
-		ArrayList<ValidationCheck> passed = new ArrayList<ValidationCheck>();
-		ArrayList<ValidationCheck> warning = new ArrayList<ValidationCheck>();
-		ArrayList<ValidationCheck> error = new ArrayList<ValidationCheck>();
-		
-		
-		for(ValidationCheck check : allChecks){
-			switch(check.getStatus()){
-			case ERROR:
-				error.add(check);
-				break;
-			case PASSED:
-				passed.add(check);
-				break;
-			case WARNING:
-				warning.add(check);
-				break;
-			default:
-				break;
-			}
-		}
-		
-		validationRes.put(ValidationStatus.ERROR, error);
-		validationRes.put(ValidationStatus.PASSED, passed);
-		validationRes.put(ValidationStatus.WARNING, warning);
-		
-		validationResults = new ValidationResults(validationRes);
 	}
 	
 	public ValidationResults getValidationResults() {

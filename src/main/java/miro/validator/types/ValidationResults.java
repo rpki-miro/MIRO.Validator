@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.ripe.rpki.commons.validation.ValidationCheck;
+import net.ripe.rpki.commons.validation.ValidationResult;
 import net.ripe.rpki.commons.validation.ValidationStatus;
 
 public class ValidationResults {
@@ -35,9 +36,11 @@ public class ValidationResults {
 	
 	private ValidationStatus validationStatus;
 	
-	public ValidationResults(HashMap<ValidationStatus, ArrayList<ValidationCheck>> validationRes) {
-		validationResults = validationRes;
-		setValidationStatus();
+	public ValidationResults() {
+		validationResults = new HashMap<ValidationStatus, ArrayList<ValidationCheck>>();
+		validationResults.put(ValidationStatus.ERROR, new ArrayList<ValidationCheck>());
+		validationResults.put(ValidationStatus.WARNING, new ArrayList<ValidationCheck>());
+		validationResults.put(ValidationStatus.PASSED, new ArrayList<ValidationCheck>());
 	}
 
 	private void setValidationStatus() {
@@ -61,11 +64,45 @@ public class ValidationResults {
 		return validationResults;
 	}
 	
+	public List<ValidationCheck> getPassed(){
+		return validationResults.get(ValidationStatus.PASSED);
+	}
+	
 	public List<ValidationCheck> getWarnings(){
 		return validationResults.get(ValidationStatus.WARNING);
 	}
 	
 	public List<ValidationCheck> getErrors(){
 		return validationResults.get(ValidationStatus.ERROR);
+	}
+	
+	/** 
+	 * Copies the ValidationCheck's from the current location in oldResult to newResult
+	 * @param oldResult
+	 * @param newResult
+	 */
+	public static void transformToValidationResults(ValidationResults newResult, ValidationResult oldResult) {
+		List<ValidationCheck> allChecks = (ArrayList<ValidationCheck>) oldResult.getAllValidationChecksForCurrentLocation();
+		
+		List<ValidationCheck> passed = newResult.getPassed();
+		List<ValidationCheck> warning = newResult.getWarnings();
+		List<ValidationCheck> error = newResult.getErrors();
+		
+		for(ValidationCheck check : allChecks){
+			switch(check.getStatus()){
+			case ERROR:
+				error.add(check);
+				break;
+			case PASSED:
+				passed.add(check);
+				break;
+			case WARNING:
+				warning.add(check);
+				break;
+			default:
+				break;
+			}
+		}
+		newResult.setValidationStatus();
 	}
 }

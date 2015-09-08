@@ -61,6 +61,7 @@ public class RoaObject extends ResourceHoldingObject {
 		this(pth,name,r);
 		parent = p;
 		//TODO eeCerts parent..?
+		this.eeCert.validationResults = this.validationResults;
 		this.eeCert = RepositoryObjectFactory.createCertificateObjectWithParent(pth, name, roa.getCertificate(), p);
 	}
 	
@@ -89,39 +90,4 @@ public class RoaObject extends ResourceHoldingObject {
 		return eeCert.getSerialNr();
 	}
 	
-	
-	public void extractOwnResults(ValidationResult result){
-		ArrayList<ValidationCheck> allChecks = (ArrayList<ValidationCheck>) result.getAllValidationChecksForLocation(new ValidationLocation(filename));
-		
-		HashMap<ValidationStatus, ArrayList<ValidationCheck>> validationRes = new HashMap<ValidationStatus, ArrayList<ValidationCheck>>();
-		ArrayList<ValidationCheck> passed = new ArrayList<ValidationCheck>();
-		ArrayList<ValidationCheck> warning = new ArrayList<ValidationCheck>();
-		ArrayList<ValidationCheck> error = new ArrayList<ValidationCheck>();
-		
-		
-		for(ValidationCheck check : allChecks){
-			switch(check.getStatus()){
-			case ERROR:
-				error.add(check);
-				break;
-			case PASSED:
-				passed.add(check);
-				break;
-			case WARNING:
-				warning.add(check);
-				break;
-			default:
-				break;
-			}
-		}
-		
-		validationRes.put(ValidationStatus.ERROR, error);
-		validationRes.put(ValidationStatus.PASSED, passed);
-		validationRes.put(ValidationStatus.WARNING, warning);
-		
-		validationResults = new ValidationResults(validationRes);
-		eeCert.validationResults = validationResults;
-	}
-	
-
 }
