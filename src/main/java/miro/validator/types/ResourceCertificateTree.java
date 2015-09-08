@@ -73,47 +73,4 @@ public class ResourceCertificateTree {
 	public CertificateObject getTrustAnchor(){
 		return trustAnchor;
 	}
-
-//	public void extractValidationResults() {
-//		
-//		ArrayList<ResourceHoldingObject> currentLevel = new ArrayList<ResourceHoldingObject>();
-//		ArrayList<ResourceHoldingObject> nextLevel = new ArrayList<ResourceHoldingObject>();
-//		ArrayList<ResourceHoldingObject> buf = null;
-//		currentLevel.add(trustAnchor);
-//		
-//		do{
-//			for(ResourceHoldingObject cw : currentLevel){
-//				
-//				cw.extractOwnResults(result);
-//				
-//				
-//				//Read in all certificates issued by cw
-//				if(cw instanceof CertificateObject){
-//					CRLObject crlWrap = ((CertificateObject) cw).getCrl();
-//					if(crlWrap != null){
-//						crlWrap.extractOwnResults(result);
-//					}
-//					
-//					ManifestObject mftWrap = ((CertificateObject) cw).getManifest();
-//					if(mftWrap != null){
-//						mftWrap.extractOwnResults(result);
-//					}
-//					
-//					buf = ((CertificateObject) cw).getChildren();
-//					nextLevel.addAll(buf);
-//				}
-//				
-//			}
-//			
-//			//Swap out the lists
-//			currentLevel = nextLevel;
-//			nextLevel = new ArrayList<ResourceHoldingObject>();
-//			
-//		} while(!currentLevel.isEmpty());
-//	}
-//
-//	public void validate() {
-//		TopDownValidator validator = new TopDownValidator(result, new ResourceCertificateLocatorImpl(), trustAnchor);
-//		validator.validate();
-//	}
 }
