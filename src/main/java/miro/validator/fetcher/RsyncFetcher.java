@@ -40,7 +40,7 @@ public class RsyncFetcher implements ObjectFetcher{
 	public static final Logger log = Logger.getGlobal();
 	
 	//TODO find better global solution for conf files
-	private static String PREFETCH_CONF_FILE = "/var/data/MIRO/Validator/prefetchURIs";
+	private static String PREFETCH_CONF_FILE;
 	
 	private String baseDirectory;
 
