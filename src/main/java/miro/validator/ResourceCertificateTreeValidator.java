@@ -215,12 +215,15 @@ public class ResourceCertificateTreeValidator {
 			} else {
 				continue;
 			}
+			
+			if(object == null)
+				continue;
+			
 			object.setRemoteLocation(remoteLocation);
 			if (isLegitimateIssuedObject(certificate, object))
 				objects.add(object);
 		}
 		return objects;
-
 	}
 
 	public boolean isPublishingPoint(X509CertificateInformationAccessDescriptor accessDescriptor) {

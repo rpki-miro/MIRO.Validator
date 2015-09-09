@@ -45,6 +45,11 @@ public class RPKIRepositoryStats {
 		this.result = result;
 		hostResults = hResults;
 	}
+	
+	public RPKIRepositoryStats(String name, Result result, List<Result> hResults) {
+		this.name = name;
+		this.timestamp = new DateTime();
+	}
 
 	public String getName() {
 		return name;

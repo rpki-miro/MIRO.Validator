@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -50,13 +51,13 @@ public class RsyncFetcher implements ObjectFetcher{
 	
 	private File prefetchURIstorage;
 	
-	public RsyncFetcher(String baseDir, String prefetchFilepath) {
+	public RsyncFetcher(String baseDir, String prefetchFilepath) throws IOException {
 		baseDirectory = baseDir;
-		clearDirectory();
-		prefetchURIs = new ArrayList<URI>();
-		downloadedURIs = new ArrayList<URI>();
 		PREFETCH_CONF_FILE = prefetchFilepath;
 		prefetchURIstorage = new File(PREFETCH_CONF_FILE);
+		setupDirectories();
+		prefetchURIs = new ArrayList<URI>();
+		downloadedURIs = new ArrayList<URI>();
 		readPrefetchURIsFromFile();
 	}
 	
@@ -173,13 +174,12 @@ public class RsyncFetcher implements ObjectFetcher{
 		return false;
 	}
 	
-	private void clearDirectory(){
-		try {
-			FileUtils.cleanDirectory(new File(baseDirectory));
-		} catch (Exception e) {
-			//TODO maybe runtime exception?
-			e.printStackTrace();
-		}
+	private void setupDirectories() throws IOException{
+			File baseDirFile = new File(baseDirectory);
+			FileUtils.forceMkdir(baseDirFile);
+			FileUtils.cleanDirectory(baseDirFile);
+			prefetchURIstorage.getParentFile().mkdirs();
+			prefetchURIstorage.createNewFile();
 	}
 	
 	//TODO inefficient. whole class datastructure is inefficient. needs a longest char match alg

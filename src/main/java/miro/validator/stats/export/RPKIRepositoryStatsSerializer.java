@@ -24,6 +24,10 @@ package main.java.miro.validator.stats.export;
 
 import java.lang.reflect.Type;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import main.java.miro.validator.stats.types.RPKIRepositoryStats;
 
 import com.google.gson.JsonElement;
@@ -40,7 +44,9 @@ public class RPKIRepositoryStatsSerializer implements JsonSerializer<RPKIReposit
 		
 		JsonObject statsObj = new JsonObject();
 		statsObj.add("name", new JsonPrimitive(src.getName()));
-		statsObj.add("timestamp", new JsonPrimitive(src.getTimestamp().toString()));
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+		String dtStr = fmt.print(src.getTimestamp());
+		statsObj.add("timestamp", new JsonPrimitive(dtStr));
 		statsObj.add("trustAnchor", new JsonPrimitive(src.getTrustAnchor()));
 		statsObj.add("result", context.serialize(src.getResult()));
 		return statsObj;

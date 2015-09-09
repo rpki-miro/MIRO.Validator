@@ -42,7 +42,8 @@ public class JsonStatsExporter {
 	public void exportRPKIRepositoryStats(RPKIRepositoryStats r, String outputDir) {
 		GsonBuilder builder = new GsonBuilder().disableHtmlEscaping();
 		builder.registerTypeAdapter(Result.class, new ResultSerializer());
-		builder.registerTypeAdapter(ResultExtractor.class, new RPKIRepositoryStatsSerializer());
+//		builder.registerTypeAdapter(ResultExtractor.class, new RPKIRepositoryStatsSerializer());
+		builder.registerTypeAdapter(RPKIRepositoryStats.class, new RPKIRepositoryStatsSerializer());
 		
 		Gson gson = builder.create();
 		
