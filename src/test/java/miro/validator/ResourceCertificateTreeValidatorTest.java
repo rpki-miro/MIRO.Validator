@@ -25,6 +25,7 @@ package test.java.miro.validator;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 
 import main.java.miro.validator.ResourceCertificateTreeValidator;
@@ -53,29 +54,40 @@ public class ResourceCertificateTreeValidatorTest {
 	}
 	
 	private void testWithMultipleTAL(String[] strings) {
-		ObjectFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", 
-				"src/test/resources/fetcher/prefetching/APNIC_prefetchURIs");
-		ResourceCertificateTreeValidator validator = new ResourceCertificateTreeValidator(fetcher);
-		
-		TrustAnchorLocator tal;
-		ResourceCertificateTree tree;
-		for(String reponame : strings) {
-			tal = new TrustAnchorLocator("src/test/resources/tals/" + reponame + ".tal");
-			tree = validator.withTAL(tal);
-			assertNotNull(tree.getTrustAnchor());
-			assertTrue(tree.getName().equals(reponame));
+		try {
+			ObjectFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", 
+					"src/test/resources/fetcher/prefetching/APNIC_prefetchURIs");
+			ResourceCertificateTreeValidator validator = new ResourceCertificateTreeValidator(
+					fetcher);
+
+			TrustAnchorLocator tal;
+			ResourceCertificateTree tree;
+			for (String reponame : strings) {
+				tal = new TrustAnchorLocator("src/test/resources/tals/" + reponame + ".tal");
+				tree = validator.withTAL(tal);
+				assertNotNull(tree.getTrustAnchor());
+				assertTrue(tree.getName().equals(reponame));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	
 }
 
 	public void testWithTAL(String reponame) {
-		ObjectFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", 
-				"src/test/resources/fetcher/prefetching/" + reponame + "_prefetchURIs");
-		ResourceCertificateTreeValidator validator = new ResourceCertificateTreeValidator(fetcher);
-		TrustAnchorLocator tal = new TrustAnchorLocator("src/test/resources/tals/"+reponame+ ".tal");
-		ResourceCertificateTree tree = validator.withTAL(tal);
-		assertNotNull(tree.getTrustAnchor());
-		assertTrue(tree.getName().equals(reponame));
+		try {
+			ObjectFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/",
+					"src/test/resources/fetcher/prefetching/" + reponame + "_prefetchURIs");
+			ResourceCertificateTreeValidator validator = new ResourceCertificateTreeValidator(
+					fetcher);
+			TrustAnchorLocator tal = new TrustAnchorLocator("src/test/resources/tals/" + reponame
+					+ ".tal");
+			ResourceCertificateTree tree = validator.withTAL(tal);
+			assertNotNull(tree.getTrustAnchor());
+			assertTrue(tree.getName().equals(reponame));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

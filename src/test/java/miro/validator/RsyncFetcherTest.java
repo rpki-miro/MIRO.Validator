@@ -39,7 +39,12 @@ public class RsyncFetcherTest {
 	@Test
 	public void testAddURI() {
 		Utilities.cleanFile("src/test/resources/fetcher/prefetching/prefetchURIs");
-		RsyncFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		RsyncFetcher fetcher = null;
+		try {
+			fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		URI u1 = URI.create("rsync://rpki.example.org/");
 		URI u2 = URI.create("rsync://rpki.example2.org/");
 		URI u3 = URI.create("rsync://rpki.example.org/abc");
@@ -54,7 +59,11 @@ public class RsyncFetcherTest {
 		assertFalse(prefetchedURIs.contains(u3));
 		
 		
-		fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		try {
+			fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		u1 = URI.create("rsync://rpki.example.com");
 		u2 = URI.create("rsync://rpki.example.org/");
 		
@@ -66,7 +75,11 @@ public class RsyncFetcherTest {
 		assertTrue(prefetchedURIs.contains(u2));
 		
 
-		fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		try {
+			fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		u1 = URI.create("rsync://rpki.example.com/abc/def");
 		u2 = URI.create("rsync://rpki.example.org/abc/def");
 		u3 = URI.create("rsync://rpki.example.com/abc");
@@ -87,7 +100,12 @@ public class RsyncFetcherTest {
 	@Test
 	public void testRemoveURI() {
 		Utilities.cleanFile("src/test/resources/fetcher/prefetching/prefetchURIs");
-		RsyncFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		RsyncFetcher fetcher = null;
+		try {
+			fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		URI u1 = URI.create("rsync://rpki.example.org");
 		URI u2 = URI.create("rsync://rpki.example2.org");
 		
@@ -107,7 +125,12 @@ public class RsyncFetcherTest {
 	@Test
 	public void testReadWritePrefetchURIs() {
 		Utilities.cleanFile("src/test/resources/fetcher/prefetching/prefetchURIs");
-		RsyncFetcher fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		RsyncFetcher fetcher = null;
+		try {
+			fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		URI u1 = URI.create("rsync://rpki.example.org");
 		URI u2 = URI.create("rsync://rpki.example.com");
@@ -115,7 +138,11 @@ public class RsyncFetcherTest {
 		fetcher.addPrefetchURI(u2);
 		fetcher.writePrefetchURIsToFile();
 
-		fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		try {
+			fetcher = new RsyncFetcher("src/test/resources/fetcher/repository/", "src/test/resources/fetcher/prefetching/prefetchURIs");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		assertTrue(fetcher.getPrefetchURIs().contains(URI.create("rsync://rpki.example.com")));
 		assertTrue(fetcher.getPrefetchURIs().contains(URI.create("rsync://rpki.example.org")));
 	}

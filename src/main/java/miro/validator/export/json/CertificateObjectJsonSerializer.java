@@ -69,31 +69,31 @@ public class CertificateObjectJsonSerializer implements JsonSerializer<Certifica
 		cwJson.add("validation_result", context.serialize(cw.getValidationResults(),ValidationResults.class));
 		cwJson.add("resources", context.serialize(cw.getResources(), IpResourceSet.class));
 		
-//		if(cw.getManifest() != null){
-//			cwJson.add("manifest", context.serialize(cw.getManifest(),ManifestObject.class));
-//		}
+		if(cw.getManifest() != null){
+			cwJson.add("manifest", context.serialize(cw.getManifest(),ManifestObject.class));
+		}
 		
-//		if(cw.getX509Crl() != null){
-//			cwJson.add("crl",context.serialize(cw.getCrl(),CRLObject.class));
-//		}
+		if(cw.getX509Crl() != null){
+			cwJson.add("crl",context.serialize(cw.getCrl(),CRLObject.class));
+		}
 		
-//		JsonArray children_json = new JsonArray();
-//		JsonObject childJson;
-//		String type;
-//		if(cw.getChildren() != null){
-//			for(ResourceHoldingObject kid : cw.getChildren()){
-//				childJson = new JsonObject();
-//				if(kid instanceof CertificateObject){
-//					type = "cer";
-//				} else {
-//					type = "roa";
-//				}
-//				childJson.add("type", new JsonPrimitive(type));
-//				childJson.add("child", context.serialize(kid,ResourceHoldingObject.class));
-//				children_json.add(childJson);
-//			}
-//		}
-//		cwJson.add("children",children_json);
+		JsonArray children_json = new JsonArray();
+		JsonObject childJson;
+		String type;
+		if(cw.getChildren() != null){
+			for(ResourceHoldingObject kid : cw.getChildren()){
+				childJson = new JsonObject();
+				if(kid instanceof CertificateObject){
+					type = "cer";
+				} else {
+					type = "roa";
+				}
+				childJson.add("type", new JsonPrimitive(type));
+				childJson.add("child", context.serialize(kid,ResourceHoldingObject.class));
+				children_json.add(childJson);
+			}
+		}
+		cwJson.add("children",children_json);
 		
 		
 		return cwJson;
