@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  * 
  * */
-package main.java.miro.validator.stats.test;
+package test;
 
 import java.util.Random;
 import java.util.Set;
