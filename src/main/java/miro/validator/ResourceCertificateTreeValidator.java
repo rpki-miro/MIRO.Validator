@@ -75,7 +75,7 @@ public class ResourceCertificateTreeValidator {
 	//To pretty print byte[]
 	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 	
-	public static final Logger log = Logger.getGlobal();
+	public static final Logger log = Logger.getLogger(ResourceCertificateTreeValidator.class.getName());
 	
 	private ObjectFetcher fetcher;
 

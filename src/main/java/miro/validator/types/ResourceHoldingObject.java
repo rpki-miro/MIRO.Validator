@@ -42,8 +42,6 @@ import net.ripe.rpki.commons.validation.ValidationStatus;
 
 public abstract class ResourceHoldingObject extends RepositoryObject {
 	
-	public static final Logger log = Logger.getGlobal();
-	
 	protected ResourceHoldingObject parent;
 	
 	protected X509ResourceCertificate certificate;

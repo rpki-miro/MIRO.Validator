@@ -50,7 +50,7 @@ import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryOb
 import net.ripe.rpki.commons.validation.objectvalidators.ResourceCertificateLocator;
 
 public class TopDownValidator {
-	public static final Logger log = Logger.getGlobal();
+	public static final Logger log = Logger.getLogger(TopDownValidator.class.getName());
 	
     private ValidationResult result;
     private ResourceCertificateLocator locator;

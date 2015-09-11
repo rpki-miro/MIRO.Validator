@@ -45,7 +45,7 @@ import net.ripe.rpki.commons.validation.ValidationCheck;
 
 public class ResultExtractor {
 	
-	private static final Logger log = Logger.getGlobal();
+	private static final Logger log = Logger.getLogger(ResultExtractor.class.getName());
 	
 	private ResourceCertificateTree currentTree;
 	

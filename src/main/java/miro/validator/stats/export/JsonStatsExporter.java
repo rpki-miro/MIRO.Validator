@@ -37,7 +37,7 @@ import com.google.gson.GsonBuilder;
 
 public class JsonStatsExporter {
 	
-	public static final Logger log = Logger.getGlobal();
+	public static final Logger log = Logger.getLogger(JsonStatsExporter.class.getName());
 	
 	public void exportRPKIRepositoryStats(RPKIRepositoryStats r, String outputDir) {
 		GsonBuilder builder = new GsonBuilder().disableHtmlEscaping();

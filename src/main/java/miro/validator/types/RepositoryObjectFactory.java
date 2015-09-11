@@ -45,7 +45,7 @@ import com.google.common.io.Files;
 
 public class RepositoryObjectFactory {
 	
-	public static final Logger log = Logger.getGlobal();
+	public static final Logger log = Logger.getLogger(RepositoryObjectFactory.class.getName());
 	
 	public static HashMap<X509ResourceCertificate, ResourceHoldingObject> resourceObjects = new HashMap<X509ResourceCertificate, ResourceHoldingObject>();
 

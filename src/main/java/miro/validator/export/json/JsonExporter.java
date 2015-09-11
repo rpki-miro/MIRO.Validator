@@ -45,7 +45,7 @@ import com.google.gson.GsonBuilder;
 
 public class JsonExporter implements IRepositoryExporter {
 
-	private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	private static final Logger logger = Logger.getLogger(JsonExporter.class.getName());
 	public final String EXPORT_FILE;
 	
 	public JsonExporter(String export_file) {

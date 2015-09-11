@@ -55,7 +55,7 @@ public class ValidatorMain {
 	
 	public static String TIMESTAMP;
 	
-	public static final Logger log = Logger.getGlobal();
+	public static final Logger log = Logger.getLogger(ValidatorMain.class.getName());
 	
 	public static void main(String[] args){
 		

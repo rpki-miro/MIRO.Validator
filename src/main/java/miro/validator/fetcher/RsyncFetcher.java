@@ -38,7 +38,7 @@ import org.apache.commons.io.FileUtils;
 
 public class RsyncFetcher implements ObjectFetcher{
 	
-	public static final Logger log = Logger.getGlobal();
+	public static final Logger log = Logger.getLogger(RsyncFetcher.class.getName());
 	
 	//TODO find better global solution for conf files
 	private static String PREFETCH_CONF_FILE;
