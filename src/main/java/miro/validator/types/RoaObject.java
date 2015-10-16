@@ -22,27 +22,18 @@ THE SOFTWARE.
  * */
 package main.java.miro.validator.types;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.joda.time.DateTime;
 
-import net.ripe.ipresource.IpResourceSet;
+import net.ripe.ipresource.Asn;
 import net.ripe.rpki.commons.crypto.cms.roa.RoaCms;
 import net.ripe.rpki.commons.crypto.crl.CrlLocator;
-import net.ripe.rpki.commons.crypto.x509cert.X509ResourceCertificate;
-import net.ripe.rpki.commons.validation.ValidationCheck;
 import net.ripe.rpki.commons.validation.ValidationLocation;
 import net.ripe.rpki.commons.validation.ValidationOptions;
 import net.ripe.rpki.commons.validation.ValidationResult;
-import net.ripe.rpki.commons.validation.ValidationStatus;
 import net.ripe.rpki.commons.validation.objectvalidators.CertificateRepositoryObjectValidationContext;
 
 public class RoaObject extends ResourceHoldingObject {
@@ -70,6 +61,10 @@ public class RoaObject extends ResourceHoldingObject {
 	
 	public RoaCms getRoa() {
 		return roa;
+	}
+	
+	public Asn getAsn() {
+		return roa.getAsn();
 	}
 
 	@Override

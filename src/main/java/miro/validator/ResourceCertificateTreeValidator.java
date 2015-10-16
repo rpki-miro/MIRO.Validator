@@ -84,6 +84,7 @@ public class ResourceCertificateTreeValidator {
 	}
 	
 	public ResourceCertificateTree withTAL(TrustAnchorLocator tal){
+		RepositoryObjectFactory.clearResourceObjectsMap();
 		CertificateObject trustAnchor = obtainTrustAnchor(tal.getTrustAnchorLocation());
 		if(trustAnchor == null){
 			log.log(Level.SEVERE, "Could not obtain trust anchor at " + tal.getTrustAnchorLocation());
