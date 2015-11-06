@@ -46,6 +46,13 @@ import com.google.gson.JsonSerializer;
 
 public class CertificateObjectJsonSerializer implements JsonSerializer<CertificateObject> {
 
+	
+	private boolean includeSubtree;
+
+	public CertificateObjectJsonSerializer(boolean subtree) {
+		includeSubtree = subtree;
+	}
+
 	public JsonElement serialize(CertificateObject cw, Type typeOfSrc,
 			JsonSerializationContext context) {
 		
@@ -61,13 +68,12 @@ public class CertificateObjectJsonSerializer implements JsonSerializer<Certifica
 		cwJson.add("isCA", new JsonPrimitive(cw.getIsCA()));
 		cwJson.add("isRoot", new JsonPrimitive(cw.getIsRoot()));
 		cwJson.add("validity_period", new JsonPrimitive(cw.getValidityPeriod().toString()));
-		
+		cwJson.add("validation_result", context.serialize(cw.getValidationResults(),ValidationResults.class));
+		cwJson.add("resources", context.serialize(cw.getResources(), IpResourceSet.class));
 		
 		if(cw.getAki() != null){
 			cwJson.add("authority_key_identifier", new JsonPrimitive(ResourceCertificateTreeValidator.bytesToHex(cw.getAki())));
 		}
-		cwJson.add("validation_result", context.serialize(cw.getValidationResults(),ValidationResults.class));
-		cwJson.add("resources", context.serialize(cw.getResources(), IpResourceSet.class));
 		
 		if(cw.getManifest() != null){
 			cwJson.add("manifest", context.serialize(cw.getManifest(),ManifestObject.class));
@@ -77,25 +83,25 @@ public class CertificateObjectJsonSerializer implements JsonSerializer<Certifica
 			cwJson.add("crl",context.serialize(cw.getCrl(),CRLObject.class));
 		}
 		
-		JsonArray children_json = new JsonArray();
-		JsonObject childJson;
-		String type;
-		if(cw.getChildren() != null){
-			for(ResourceHoldingObject kid : cw.getChildren()){
-				childJson = new JsonObject();
-				if(kid instanceof CertificateObject){
-					type = "cer";
-				} else {
-					type = "roa";
+		if(includeSubtree){
+			JsonArray children_json = new JsonArray();
+			JsonObject childJson;
+			String type;
+			if (cw.getChildren() != null) {
+				for (ResourceHoldingObject kid : cw.getChildren()) {
+					childJson = new JsonObject();
+					if (kid instanceof CertificateObject) {
+						type = "cer";
+					} else {
+						type = "roa";
+					}
+					childJson.add("type", new JsonPrimitive(type));
+					childJson.add("child", context.serialize(kid, ResourceHoldingObject.class));
+					children_json.add(childJson);
 				}
-				childJson.add("type", new JsonPrimitive(type));
-				childJson.add("child", context.serialize(kid,ResourceHoldingObject.class));
-				children_json.add(childJson);
 			}
+			cwJson.add("children", children_json);
 		}
-		cwJson.add("children",children_json);
-		
-		
 		return cwJson;
 	}
 		
