@@ -78,7 +78,7 @@ public class RTRExporter implements IRepositoryExporter {
 	}
 
 	public void exportROAs(List<RoaObject> roas) {
-		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(EXPORT_FILE, false)))){
+		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(EXPORT_FILE, true)))){
 			for(RoaObject roa : roas){
 				for(RoaPrefix prefix : roa.getRoa().getPrefixes()){
 					out.println(roa.getAsn().getValue()+ " " + prefix.getPrefix().toString() + " " + prefix.getMaximumLength());
