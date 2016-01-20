@@ -54,6 +54,8 @@ public class RTRExporter implements IRepositoryExporter {
 	
 	public RTRExporter(String expFile) {
 		EXPORT_FILE = expFile;
+		File f = new File(EXPORT_FILE);
+		f.getParentFile().mkdirs();
 	}
 
 	@Override
@@ -81,12 +83,11 @@ public class RTRExporter implements IRepositoryExporter {
 		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(EXPORT_FILE, true)))){
 			for(RoaObject roa : roas){
 				for(RoaPrefix prefix : roa.getRoa().getPrefixes()){
-					out.println(roa.getAsn().getValue()+ " " + prefix.getPrefix().toString() + " " + prefix.getMaximumLength());
+					out.println(roa.getAsn().getValue()+ " " + prefix.getPrefix().toString() + " " + prefix.getEffectiveMaximumLength());
 				}
 			}
 		} catch(IOException e){
-			
+			e.printStackTrace();
 		}
-
 	}
 }
