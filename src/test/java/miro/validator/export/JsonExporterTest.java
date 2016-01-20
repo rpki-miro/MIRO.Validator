@@ -5,11 +5,11 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 
 import main.java.miro.validator.ResourceCertificateTreeValidator;
-import main.java.miro.validator.TrustAnchorLocator;
 import main.java.miro.validator.export.json.JsonExporter;
 import main.java.miro.validator.fetcher.ObjectFetcher;
 import main.java.miro.validator.fetcher.RsyncFetcher;
 import main.java.miro.validator.types.ResourceCertificateTree;
+import main.java.miro.validator.types.TrustAnchorLocator;
 
 import org.junit.Test;
 

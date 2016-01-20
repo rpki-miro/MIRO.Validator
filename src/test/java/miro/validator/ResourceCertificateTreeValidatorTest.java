@@ -29,10 +29,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import main.java.miro.validator.ResourceCertificateTreeValidator;
-import main.java.miro.validator.TrustAnchorLocator;
 import main.java.miro.validator.fetcher.ObjectFetcher;
 import main.java.miro.validator.fetcher.RsyncFetcher;
 import main.java.miro.validator.types.ResourceCertificateTree;
+import main.java.miro.validator.types.TrustAnchorLocator;
 
 import org.junit.Test;
 

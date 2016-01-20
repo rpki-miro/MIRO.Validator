@@ -1,4 +1,4 @@
-package main.java.miro.validator;
+package main.java.miro.validator.types;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,8 +7,6 @@ import java.util.Arrays;
 
 import main.java.miro.validator.fetcher.DownloadResult;
 import main.java.miro.validator.fetcher.RsyncFetcher;
-import main.java.miro.validator.types.CertificateObject;
-import main.java.miro.validator.types.RepositoryObjectFactory;
 
 
 //https://tools.ietf.org/html/rfc6490

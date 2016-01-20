@@ -64,6 +64,7 @@ import main.java.miro.validator.types.RepositoryObjectFactory;
 import main.java.miro.validator.types.ResourceCertificateTree;
 import main.java.miro.validator.types.ResourceHoldingObject;
 import main.java.miro.validator.types.RoaObject;
+import main.java.miro.validator.types.TrustAnchorLocator;
 import main.java.miro.validator.validation.ResourceCertificateLocatorImpl;
 import main.java.miro.validator.validation.TopDownValidator;
 import net.ripe.rpki.commons.crypto.x509cert.X509CertificateInformationAccessDescriptor;

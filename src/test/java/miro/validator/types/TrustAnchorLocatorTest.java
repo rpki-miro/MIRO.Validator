@@ -20,13 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  * 
  * */
-package test.java.miro.validator;
+package test.java.miro.validator.types;
 
 import static org.junit.Assert.*;
 
 import java.net.URI;
 
-import main.java.miro.validator.TrustAnchorLocator;
+import main.java.miro.validator.types.TrustAnchorLocator;
 
 import org.bouncycastle.util.Arrays;
 import org.junit.Test;

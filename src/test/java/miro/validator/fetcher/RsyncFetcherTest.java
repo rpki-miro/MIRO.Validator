@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  * 
  * */
-package test.java.miro.validator;
+package test.java.miro.validator.fetcher;
 
 import static org.junit.Assert.*;
 
@@ -33,6 +33,8 @@ import main.java.miro.validator.fetcher.RsyncFetcher;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+
+import test.java.miro.validator.Utilities;
 
 public class RsyncFetcherTest {
 
