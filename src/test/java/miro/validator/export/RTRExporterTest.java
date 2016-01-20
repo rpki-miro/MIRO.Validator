@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +74,11 @@ public class RTRExporterTest {
 		roas.add(roaObj1);
 		roas.add(roaObj2);
 		
+		try {
+			Files.delete(Paths.get("src/test/resources/export/roas.rtr"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		RTRExporter exporter = new RTRExporter("src/test/resources/export/roas.rtr");
 		exporter.exportROAs(roas);
 		exporter.exportROAs(roas);
@@ -85,6 +92,7 @@ public class RTRExporterTest {
 		assertTrue("1234 143.0.0.0/8 16".equals(lines.get(5)));
 		assertTrue("5678 129.131.41.0/24 24".equals(lines.get(6)));
 		assertTrue("5678 123.192.0.0/10 16".equals(lines.get(7)));
+		assertTrue(lines.size() == 8);
 	}
 	
 	public List<String> readLines(String filename){
