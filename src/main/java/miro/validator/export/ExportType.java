@@ -24,5 +24,5 @@ THE SOFTWARE.
 package main.java.miro.validator.export;
 
 public enum ExportType {
-	JSON, CVS, DB
+	JSON, CVS, DB, RTR
 }
