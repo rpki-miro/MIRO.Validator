@@ -6,6 +6,19 @@
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
+       <plugin>
+            <!-- Build an executable JAR -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>main.java.miro.validator.ValidatorMain</mainClass>
+                    </manifest>
+         </archive>
+        </configuration>
+       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
