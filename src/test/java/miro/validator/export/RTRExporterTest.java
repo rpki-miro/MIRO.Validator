@@ -31,11 +31,11 @@ public class RTRExporterTest {
 
 		RoaPrefix pref1 = mock(RoaPrefix.class);
 		when(pref1.getPrefix()).thenReturn(IpRange.parse("109.145.0.0/16"));
-		when(pref1.getMaximumLength()).thenReturn(new Integer(24));
+		when(pref1.getEffectiveMaximumLength()).thenReturn(new Integer(24));
 
 		RoaPrefix pref2 = mock(RoaPrefix.class);
 		when(pref2.getPrefix()).thenReturn(IpRange.parse("143.0.0.0/8"));
-		when(pref2.getMaximumLength()).thenReturn(new Integer(16));
+		when(pref2.getEffectiveMaximumLength()).thenReturn(new Integer(16));
 
 		List<RoaPrefix> pref_list1 = new ArrayList<RoaPrefix>();
 		pref_list1.add(pref1);
@@ -54,11 +54,11 @@ public class RTRExporterTest {
 
 		RoaPrefix pref3 = mock(RoaPrefix.class);
 		when(pref3.getPrefix()).thenReturn(IpRange.parse("129.131.41.0/24"));
-		when(pref3.getMaximumLength()).thenReturn(new Integer(24));
+		when(pref3.getEffectiveMaximumLength()).thenReturn(new Integer(24));
 
 		RoaPrefix pref4 = mock(RoaPrefix.class);
 		when(pref4.getPrefix()).thenReturn(IpRange.parse("123.192.0.0/10"));
-		when(pref4.getMaximumLength()).thenReturn(new Integer(16));
+		when(pref4.getEffectiveMaximumLength()).thenReturn(new Integer(16));
 
 		List<RoaPrefix> pref_list2 = new ArrayList<RoaPrefix>();
 		pref_list2.add(pref3);
