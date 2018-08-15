@@ -24,7 +24,9 @@ package main.java.miro.validator;
 
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,8 @@ public class ValidatorMain {
 	public static String STATS_DIR;
 	
 	public static String TIMESTAMP;
+
+	public static String TALDirectory;
 	
 	public static final Logger log = Logger.getLogger(ValidatorMain.class.getName());
 	
@@ -61,7 +65,9 @@ public class ValidatorMain {
 		
 		checkArguments(args);
 		
-		readArguments(args);
+		readConfig(args[0]);
+		
+//		readArguments(args);
 		
 //		ResourceCertificateTreeValidator treeValidator = new ResourceCertificateTreeValidator(BASE_DIR);
 //		treeValidator.readAndValidate(TA_LOCATION, REPO_NAME, TIMESTAMP);
@@ -79,8 +85,8 @@ public class ValidatorMain {
 
 
 	private static void checkArguments(String[] args) {
-		if(args.length < 2){
-			log.log(Level.SEVERE, "Error: Not enough arguments. Exiting");
+		if(args.length != 1){
+			log.log(Level.SEVERE, "Error: Incorrect number of arguments. Exiting");
 			printUsage();
 			System.exit(0);
 		}
@@ -91,24 +97,25 @@ public class ValidatorMain {
 			System.exit(0);
 		}
 		
-		if(!new File(args[1]).isDirectory()){
-			log.log(Level.SEVERE,"Error: {0} is not a directory. Exiting",args[1]);
-			printUsage();
-			System.exit(0);
-		}
+//		if(!new File(args[1]).isDirectory()){
+//			log.log(Level.SEVERE,"Error: {0} is not a directory. Exiting",args[1]);
+//			printUsage();
+//			System.exit(0);
+//		}
 		
 	}
 
 	public static void printUsage(){
-		System.out.println("Usage: java -jar repository_processor.jar trust_anchor.cer /path/to/toplevel/repository\n");
-		System.out.println("Optional parameters:\n");
-		System.out.println("    -e <format> <file>    Exports repository in format to given file");
-		System.out.println("                          format options: 'json'\n");
-		System.out.println("    -l <file>             Log to file\n");
-		System.out.println("    -v                    Be verbose");
-		System.out.println("    -n <name>             Set name for repository\n");
-		System.out.println("    -s <directory>        Export stats about repository to directory\n");
-		System.out.println("    -d <date>             Sets <date> as last update time for repository\n");
+//		System.out.println("Usage: java -jar repository_processor.jar trust_anchor.cer /path/to/toplevel/repository\n");
+		System.out.println("Usage: java -jar repository_processor.jar /path/to/miro.conf\n");
+//		System.out.println("Optional parameters:\n");
+//		System.out.println("    -e <format> <file>    Exports repository in format to given file");
+//		System.out.println("                          format options: 'json'\n");
+//		System.out.println("    -l <file>             Log to file\n");
+//		System.out.println("    -v                    Be verbose");
+//		System.out.println("    -n <name>             Set name for repository\n");
+//		System.out.println("    -s <directory>        Export stats about repository to directory\n");
+//		System.out.println("    -d <date>             Sets <date> as last update time for repository\n");
 	}
 	
 	public static void readArguments(String[] args){
@@ -184,5 +191,20 @@ public class ValidatorMain {
 				}
 			}
 		}
+	}
+
+	public static void readConfig(String path) {
+		Properties prop = new Properties();
+		log.log(Level.FINE, "Reading config file at: {0}", path);
+		try {
+			prop.load(new FileInputStream(path));
+			setTALDir(prop.getProperty("tals", "/var/data/MIRO/Browser/tals/"));
+		} catch (IOException e) {
+			log.log(Level.SEVERE, "Error: Could not read config file at {0}. Exiting.", path);
+		}
+	}
+	private static void setTALDir(String key) {
+		TALDirectory = key;
+		log.log(Level.FINE, "Set TALDirectory: {0}", key);
 	}
 }
