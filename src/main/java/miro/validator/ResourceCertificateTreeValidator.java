@@ -229,7 +229,8 @@ public class ResourceCertificateTreeValidator {
 	}
 
 	public boolean isPublishingPoint(X509CertificateInformationAccessDescriptor accessDescriptor) {
-		return !accessDescriptor.getLocation().toString().endsWith(".mft");
+		String ad = accessDescriptor.getLocation().toString();
+		return !(ad.endsWith(".mft") || ad.endsWith(".xml"));
 	}
 	
 	public boolean isLegitimateIssuedObject(CertificateObject parent, RepositoryObject child) {
