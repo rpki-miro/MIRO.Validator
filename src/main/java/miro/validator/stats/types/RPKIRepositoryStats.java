@@ -84,6 +84,14 @@ public class RPKIRepositoryStats {
 	public List<Result> getHostResults() {
 		return hostResults;
 	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setTrustAnchor(String ta) {
+		this.trustAnchor = ta;
+	}
 
 	public void setHostResults(List<Result> hostResults) {
 		this.hostResults = hostResults;
