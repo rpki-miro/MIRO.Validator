@@ -51,6 +51,7 @@ public class RepositoryObjectFactory {
 
 	
 	public static void clearResourceObjectsMap() {
+		resourceObjects.clear();
 		resourceObjects = new HashMap<X509ResourceCertificate, ResourceHoldingObject>();
 	}
 
