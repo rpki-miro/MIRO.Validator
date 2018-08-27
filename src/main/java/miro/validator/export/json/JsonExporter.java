@@ -69,6 +69,7 @@ public class JsonExporter implements IRepositoryExporter {
 		
 		Gson gson = builder.setPrettyPrinting().create();	
 		File f = new File(EXPORT_FILE);
+		f.getParentFile().mkdirs();
 		
 		try {
 			FileWriter fw = new FileWriter(f);
