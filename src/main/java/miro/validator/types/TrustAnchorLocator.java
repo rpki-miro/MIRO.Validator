@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import main.java.miro.validator.fetcher.DownloadResult;
 import main.java.miro.validator.fetcher.RsyncFetcher;
@@ -39,7 +40,7 @@ public class TrustAnchorLocator {
 	
 	private String name;
 
-	public TrustAnchorLocator(String filepath) {
+	public TrustAnchorLocator(String filepath) throws StringIndexOutOfBoundsException {
 		File TALFile = new File(filepath);
 		byte[] talBytes = readBytesFromFile(TALFile);
 		trustAnchorLocation = getURIfromTALbytes(talBytes);
@@ -75,7 +76,7 @@ public class TrustAnchorLocator {
 	 * @param talBytes
 	 * @return
 	 */
-	public static URI getURIfromTALbytes(byte[] talBytes) {
+	public static URI getURIfromTALbytes(byte[] talBytes) throws StringIndexOutOfBoundsException {
 		int newLineIndex = getFirstNewLineIndex(talBytes);
 		return URI.create(new String(talBytes, 0, newLineIndex));
 	}
