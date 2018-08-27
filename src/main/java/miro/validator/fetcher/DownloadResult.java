@@ -53,6 +53,15 @@ public class DownloadResult {
 		rsyncRtval = 0;
 	}
 
+	//TODO better solution to bad source protocol
+	public DownloadResult(String badSource) {
+		source = badSource;
+		destination = "";
+		success = false;
+		elapsedTime = 0;
+		rsyncRtval = 0;
+	}
+
 	public boolean wasSuccessful() {
 		return success;
 	}
