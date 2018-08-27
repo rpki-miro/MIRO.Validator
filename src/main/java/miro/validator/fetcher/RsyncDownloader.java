@@ -35,6 +35,8 @@ public class RsyncDownloader {
 	public static final Logger log = Logger.getGlobal();
 
 	public DownloadResult downloadData(String source, String destination) {
+		if(source.startsWith("http"))
+			return new DownloadResult(source);
 		createDirectories(destination);
 		Rsync rsync = new Rsync(source, destination);
 		rsync.addOptions("-a", "-v");
