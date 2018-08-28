@@ -10,8 +10,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
         <configuration>
-          <source/>
-          <target/>
+        <source>8</source>
+          <target>8</target>
         </configuration>
       </plugin>
     <plugin>
@@ -39,8 +39,14 @@
           </execution>
         </executions>
         <configuration>
+			<archive>
+				<manifest>
+				  <addClasspath>true</addClasspath>
+				  <mainClass>main.java.miro.validator.ValidatorMain</mainClass>
+				</manifest>
+			  </archive>
           <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
+            <descriptorRef>bin</descriptorRef>
           </descriptorRefs>
         </configuration>
       </plugin>
@@ -61,7 +67,6 @@
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
   		<version>4.11</version>
-  		<scope>test</scope>
   	</dependency>
   	<dependency>
   		<groupId>commons-io</groupId>
@@ -80,5 +85,11 @@
 		<artifactId>ipaddress</artifactId>
 		<version>4.2.0</version>
 	</dependency>
+    <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <version>1.10.19</version>
+    </dependency>
   </dependencies>
 </project>

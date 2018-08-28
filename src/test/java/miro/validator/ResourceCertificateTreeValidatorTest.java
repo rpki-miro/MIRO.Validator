@@ -50,7 +50,7 @@ public class ResourceCertificateTreeValidatorTest {
 		testWithTAL("ARIN");
 		testWithTAL("AFRINIC");
 		testWithTAL("LACNIC");
-		testWithMultipleTAL(new String[]{"APNIC_ARIN", "APNIC_AFRINIC", "APNIC_IANA", "APNIC_LACNIC", "APNIC_RIPE"});
+//		testWithMultipleTAL(new String[]{"APNIC_ARIN", "APNIC_AFRINIC", "APNIC_IANA", "APNIC_LACNIC", "APNIC_RIPE"});
 	}
 	
 	private void testWithMultipleTAL(String[] strings) {

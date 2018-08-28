@@ -73,6 +73,7 @@ import main.java.miro.validator.types.ResourceHoldingObject;
 import main.java.miro.validator.types.RoaObject;
 import main.java.miro.validator.types.TrustAnchorLocator;
 import main.java.miro.validator.types.ValidationResults;
+import main.java.miro.validator.util.ByteArrayPrinter;
 import net.ripe.rpki.commons.validation.ValidationCheck;
 
 public class ValidatorMain {
@@ -83,110 +84,44 @@ public class ValidatorMain {
 	
 	public static String PREFETCH_DIR;
 	
-	public static String TA_LOCATION;
-	
-	public static String REPO_NAME;
-
 	public static String EXPORT_DIR;
 	
-	public static ExportType EXPORT_TYPE;
-	
-	public static String EXPORT_FILE;
-	
-	public static boolean EXPORT;
-	
-	public static boolean STATS;
-	
-	public static String STATS_DIR;
-	
-	public static String TIMESTAMP;
-
 	public static String TALDirectory;
+	
+	public static String DB_HOST;
+
+	public static String DB_NAME;
+	
+	public static String DB_PORT;
+	
+	public static String DB_USER;
+
+	public static String DB_PWD;
 	
 	public static final Logger log = Logger.getLogger(ValidatorMain.class.getName());
 	
 	public static void main(String[] args){
 		checkArguments(args);
 		readConfig(args[0]);
-		addModels();
+		downloadAndValidate();
 	}
 	
-	public static void addModels() {
-		log.log(Level.INFO, "Getting models");
+	public static void downloadAndValidate() {
+		log.log(Level.INFO, "Starting download & validate");
 		List<ResourceCertificateTree> trees = new ArrayList<ResourceCertificateTree>();
 		for (File talGroupDirectory : getTALGroupDirectories()) {
-			trees.addAll(addModelsFromTALGroup(talGroupDirectory));
+			trees.addAll(downloadAndValidateTALs(talGroupDirectory));
 		}
-		Connection conn = null;
 		try {
-			conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/miro", "miro_user", "rpki");
+			Connection conn = null;
+			String db_connection_str = "jdbc:postgresql://" + DB_HOST +":"+DB_PORT +"/" + DB_NAME;
+			conn = DriverManager.getConnection(db_connection_str, DB_USER, DB_PWD);
 			clearDB(conn);
 			addTreesToDB(trees, conn);
 			addStatsToDB(trees, conn);
 			conn.close();
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
-		}
-	}
-	
-	public static void addStatsToDB(List<ResourceCertificateTree> trees, Connection conn) {
-		List<RPKIRepositoryStats> stats_list = new ArrayList<RPKIRepositoryStats>();
-		for (ResourceCertificateTree tree : trees) {
-			RPKIRepositoryStats stats = getRPKIRepositoryStats(tree);
-			stats_list.add(stats);
-			addStatToDB(stats, conn);
-		}
-		RPKIRepositoryStats total = stats_list.remove(0);
-		total.setName("All");
-		total.setTrustAnchor("None");
-		for (RPKIRepositoryStats buf : stats_list) {
-			total.addStats(buf);
-		}
-		addStatToDB(total, conn);
-	}
-	
-	public static void addStatToDB(RPKIRepositoryStats stats, Connection conn) {
-		try {
-			String query = "INSERT INTO stats VALUES";
-			query += "(";
-			query += getRPKIRepositoryStatsDBValueString(stats);
-			query += ");";
-			Statement stmt = conn.createStatement();
-			stmt.executeUpdate(query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static String getRPKIRepositoryStatsDBValueString(RPKIRepositoryStats stats) {
-		Result stats_result = stats.getResult();
-		String result = String.format("'%s', '%s', '%s', ", stats.getName(), stats.getTrustAnchor(), stats.getTimestamp().toString());
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_CER_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_MFT_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_CRL_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_ROA_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_VALID_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_CER_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_MFT_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_CRL_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_ROA_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_INVALID_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_CER_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_MFT_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_CRL_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_ROA_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_WARNING_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.WARNING_CER_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.WARNING_MFT_OBJECTS));
-		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.WARNING_CRL_OBJECTS));
-		result += String.format("%d ", stats_result.getObjectCount(StatsKeys.WARNING_ROA_OBJECTS));
-		return result;
-	}
-
-	public static void addTreesToDB(List<ResourceCertificateTree> trees, Connection conn) {
-		for (ResourceCertificateTree tree : trees) {
-			addTreeToDB(conn, tree);
 		}
 	}
 
@@ -203,12 +138,18 @@ public class ValidatorMain {
 			}
 		}
 	}
+	
+	public static void addTreesToDB(List<ResourceCertificateTree> trees, Connection conn) {
+		for (ResourceCertificateTree tree : trees) {
+			addTreeToDB(conn, tree);
+		}
+	}
 
 	public static void addTreeToDB(Connection conn, ResourceCertificateTree tree) {
 		addCertificateTreeToDB(conn, tree);
 		addCertificatesAndChildrenToDB(conn, tree.getTrustAnchor(), tree.getName(), null);
 	}
-	
+
 	public static void addCertificateTreeToDB(Connection conn, ResourceCertificateTree tree) {
 		try {
 			String query = "INSERT INTO certificate_tree VALUES";
@@ -278,6 +219,61 @@ public class ValidatorMain {
 		}
 	}
 	
+	public static void addStatsToDB(List<ResourceCertificateTree> trees, Connection conn) {
+		List<RPKIRepositoryStats> stats_list = new ArrayList<RPKIRepositoryStats>();
+		for (ResourceCertificateTree tree : trees) {
+			RPKIRepositoryStats stats = getRPKIRepositoryStats(tree);
+			stats_list.add(stats);
+			addStatToDB(stats, conn);
+		}
+		RPKIRepositoryStats total = stats_list.remove(0);
+		total.setName("All");
+		total.setTrustAnchor("None");
+		for (RPKIRepositoryStats buf : stats_list) {
+			total.addStats(buf);
+		}
+		addStatToDB(total, conn);
+	}
+	
+	public static void addStatToDB(RPKIRepositoryStats stats, Connection conn) {
+		try {
+			String query = "INSERT INTO stats VALUES";
+			query += "(";
+			query += getRPKIRepositoryStatsDBValueString(stats);
+			query += ");";
+			Statement stmt = conn.createStatement();
+			stmt.executeUpdate(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static String getRPKIRepositoryStatsDBValueString(RPKIRepositoryStats stats) {
+		Result stats_result = stats.getResult();
+		String result = String.format("'%s', '%s', '%s', ", stats.getName(), stats.getTrustAnchor(), stats.getTimestamp().toString());
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_CER_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_MFT_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_CRL_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_ROA_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_VALID_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_CER_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_MFT_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_CRL_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.VALID_ROA_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_INVALID_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_CER_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_MFT_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_CRL_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.INVALID_ROA_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.TOTAL_WARNING_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.WARNING_CER_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.WARNING_MFT_OBJECTS));
+		result += String.format("%d, ", stats_result.getObjectCount(StatsKeys.WARNING_CRL_OBJECTS));
+		result += String.format("%d ", stats_result.getObjectCount(StatsKeys.WARNING_ROA_OBJECTS));
+		return result;
+	}
+	
 	public static String getCertificateObjectDBValueString(CertificateObject cert, String tree, Integer id, Integer parentId) {
 		String result = String.format("'%s', '%s', %d, ", cert.getFilename(), cert.getSubject().toString(), cert.getSerialNr());
 		result += String.format("'%s', ", cert.getIssuer().toString());
@@ -286,13 +282,13 @@ public class ValidatorMain {
 		if (SKI == null)
 			result += String.format("%s, ", "NULL");
 		else
-			result += String.format("'%s', ", SKI.toString());
+			result += String.format("'%s', ", ByteArrayPrinter.bytesToHex(SKI));
 		
 		byte[] AKI = cert.getAki();
 		if (AKI == null)
 			result += String.format("%s, ", "NULL");
 		else
-			result += String.format("'%s', ", AKI.toString());
+			result += String.format("'%s', ", ByteArrayPrinter.bytesToHex(AKI));
 		
 		result += String.format("'%s', ", cert.getPublicKey().toString());
 		result += String.format("%b, %b, %b, ", cert.getIsEE(), cert.getIsCA(), cert.getIsRoot());
@@ -321,7 +317,8 @@ public class ValidatorMain {
 		result += String.format("%d, ", id);
 		result += String.format("%d, ", parentId);
 		
-		result += String.format("%b", !cert.getChildren().isEmpty());
+		result += String.format("%b, ", !cert.getChildren().isEmpty());
+		result += String.format("'%s'", cert.getRemoteLocation().toString());
 		
 		return result;
 	}
@@ -331,7 +328,7 @@ public class ValidatorMain {
 		
 		List<String> buffer_list = new ArrayList<String>();
 		for (String filename : mft.getFiles().keySet()) {
-			buffer_list.add("\"" + filename + " " + mft.getFiles().get(filename)+"\"");
+			buffer_list.add("\"" + filename + " " + ByteArrayPrinter.bytesToHex(mft.getFiles().get(filename))+"\"");
 		}
 
 		if (buffer_list.isEmpty())
@@ -348,7 +345,8 @@ public class ValidatorMain {
 		result += String.format("'%s', ", parent_name);
 		result += String.format("'%s', ", tree);
 		result += String.format("%d, ", getNextID());
-		result += String.format("%d", parent_id);
+		result += String.format("%d, ", parent_id);
+		result += String.format("'%s'", mft.getRemoteLocation().toString());
 		return result;
 	}
 
@@ -363,7 +361,8 @@ public class ValidatorMain {
 
 		if (buffer_list.isEmpty())
 			result += "NULL, ";
-		result += "'{" + String.join(",", buffer_list) + "}', ";
+		else 
+			result += "'{" + String.join(",", buffer_list) + "}', ";
 
 		result += String.format("'%s', ", crl.getValidationResults().getValidationStatus().toString());
 		
@@ -373,7 +372,8 @@ public class ValidatorMain {
 		result += String.format("'%s', ", parent_name);
 		result += String.format("'%s', ", tree);
 		result += String.format("%d, ", getNextID());
-		result += String.format("%d", parent_id);
+		result += String.format("%d, ", parent_id);
+		result += String.format("'%s'", crl.getRemoteLocation().toString());
 		return result;
 	}
 
@@ -400,7 +400,8 @@ public class ValidatorMain {
 		result += String.format("'%s', ", tree);
 		result += String.format("%d, ", getNextID());
 		result += String.format("%d, ", parent_id);
-		result += String.format("%d", ee_id);
+		result += String.format("%d, ", ee_id);
+		result += String.format("'%s'", roa.getRemoteLocation().toString());
 		return result;
 	}
 	
@@ -414,13 +415,13 @@ public class ValidatorMain {
 		if (SKI == null)
 			result += String.format("%s, ", "NULL");
 		else
-			result += String.format("'%s', ", SKI.toString());
+			result += String.format("'%s', ", ByteArrayPrinter.bytesToHex(SKI));
 		
 		byte[] AKI = cert.getAuthorityKeyIdentifier();
 		if (AKI == null)
 			result += String.format("%s, ", "NULL");
 		else
-			result += String.format("'%s', ", AKI.toString());
+			result += String.format("'%s', ", ByteArrayPrinter.bytesToHex(AKI));
 		
 		result += String.format("'%s', ", cert.getPublicKey().toString());
 		result += String.format("%b, %b, %b, ", cert.isEe(), cert.isCa(), cert.isRoot());
@@ -511,11 +512,23 @@ public class ValidatorMain {
 			setBaseDir(prop.getProperty("repo_dir", "/var/data/MIRO/Validator/repo/"));
 			setPrefetchDir(prop.getProperty("prefetch_dir", "/var/data/MIRO/Validator/prefetch/"));
 			setExportDir(prop.getProperty("json_export_dir", "/var/data/MIRO/Validator/export/"));
+			setDatabaseCredentials(prop);
+			setDatabaseLocation(prop);
 		} catch (IOException e) {
 			log.log(Level.SEVERE, "Error: Could not read config file at {0}. Exiting.", path);
 		}
 	}
 
+	private static void setDatabaseLocation(Properties prop) {
+		DB_HOST = prop.getProperty("db_host");
+		DB_NAME = prop.getProperty("db_name");
+		DB_PORT = prop.getProperty("db_port");
+	}
+	private static void setDatabaseCredentials(Properties prop) {
+		DB_USER = prop.getProperty("db_user");
+		DB_PWD = prop.getProperty("db_pwd");
+	}
+	
 	private static void checkArguments(String[] args) {
 		if(args.length != 1){
 			log.log(Level.SEVERE, "Error: Incorrect number of arguments. Exiting");
@@ -548,8 +561,6 @@ public class ValidatorMain {
 		log.log(Level.FINE, "Set EXPORT_DIR: {0}", key);
 	}
 	
-	
-	
 	public static File[] getTALGroupDirectories() {
 		File talMainDir = new File(TALDirectory);
 		File[] talGroupDirectories = talMainDir.listFiles(new FileFilter() {
@@ -566,7 +577,7 @@ public class ValidatorMain {
 		
 	}
 
-	public static List<ResourceCertificateTree> addModelsFromTALGroup(File talDirectory) {
+	public static List<ResourceCertificateTree> downloadAndValidateTALs(File talDirectory) {
 		ResourceCertificateTreeValidator validator;
 		ObjectFetcher fetcher;
 		TrustAnchorLocator tal;
@@ -578,7 +589,6 @@ public class ValidatorMain {
 			validator = new ResourceCertificateTreeValidator(fetcher);
 
 			for (String filename : talDirectory.list(new FilenameFilter() {
-				
 				public boolean accept(File dir, String name) {
 					return name.endsWith("tal");
 				}}))
