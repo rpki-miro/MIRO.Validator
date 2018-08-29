@@ -90,13 +90,13 @@ public class ValidatorMain {
 	
 	public static String DB_HOST;
 
-	public static String DB_NAME;
+	public static String DB_NAME = "mirodb";
 	
 	public static String DB_PORT;
 	
-	public static String DB_USER;
+	public static String DB_USER = "miro";
 
-	public static String DB_PWD;
+	public static String DB_PWD = "rpki";
 	
 	public static final Logger log = Logger.getLogger(ValidatorMain.class.getName());
 	
@@ -512,7 +512,7 @@ public class ValidatorMain {
 //			setBaseDir(prop.getProperty("repo_dir", "/var/data/MIRO/Validator/repo/"));
 //			setPrefetchDir(prop.getProperty("prefetch_dir", "/var/data/MIRO/Validator/prefetch/"));
 //			setExportDir(prop.getProperty("json_export_dir", "/var/data/MIRO/Validator/export/"));
-			setDatabaseCredentials(prop);
+//			setDatabaseCredentials(prop);
 			setDatabaseLocation(prop);
 		} catch (IOException e) {
 			log.log(Level.SEVERE, "Error: Could not read config file at {0}. Exiting.", path);
@@ -521,7 +521,7 @@ public class ValidatorMain {
 
 	private static void setDatabaseLocation(Properties prop) {
 		DB_HOST = prop.getProperty("db_host");
-		DB_NAME = prop.getProperty("db_name");
+//		DB_NAME = prop.getProperty("db_name");
 		DB_PORT = prop.getProperty("db_port");
 	}
 	private static void setDatabaseCredentials(Properties prop) {
