@@ -80,13 +80,13 @@ public class ValidatorMain {
 	
 	public static Integer ID_COUNTER = 0;
 	
-	public static String BASE_DIR;
+	public static String BASE_DIR = "/var/lib/miro/repo/";
 	
-	public static String PREFETCH_DIR;
+	public static String PREFETCH_DIR = "/etc/miro/prefetch/";
 	
-	public static String EXPORT_DIR;
+	public static String EXPORT_DIR = "/var/lib/miro/export/";
 	
-	public static String TALDirectory;
+	public static String TALDirectory = "/etc/miro/tals/";
 	
 	public static String DB_HOST;
 
@@ -508,10 +508,10 @@ public class ValidatorMain {
 		log.log(Level.FINE, "Reading config file at: {0}", path);
 		try {
 			prop.load(new FileInputStream(path));
-			setTALDir(prop.getProperty("tal_dir", "/var/data/MIRO/Validator/tals/"));
-			setBaseDir(prop.getProperty("repo_dir", "/var/data/MIRO/Validator/repo/"));
-			setPrefetchDir(prop.getProperty("prefetch_dir", "/var/data/MIRO/Validator/prefetch/"));
-			setExportDir(prop.getProperty("json_export_dir", "/var/data/MIRO/Validator/export/"));
+//			setTALDir(prop.getProperty("tal_dir", "/var/lib/MIRO/Validator/tals/"));
+//			setBaseDir(prop.getProperty("repo_dir", "/var/data/MIRO/Validator/repo/"));
+//			setPrefetchDir(prop.getProperty("prefetch_dir", "/var/data/MIRO/Validator/prefetch/"));
+//			setExportDir(prop.getProperty("json_export_dir", "/var/data/MIRO/Validator/export/"));
 			setDatabaseCredentials(prop);
 			setDatabaseLocation(prop);
 		} catch (IOException e) {
