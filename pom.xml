@@ -9,20 +9,12 @@
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
-       <plugin>
-            <!-- Build an executable JAR -->
+<!--        <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>2.4</version>
-            <configuration>
-                <archive>
-                    <manifest>
-                        <mainClass>main.java.miro.validator.ValidatorMain</mainClass>
-                    </manifest>
-         </archive>
-        </configuration>
-       </plugin>
-      <plugin>
+      </plugin>
+ -->      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
         <configuration>
@@ -31,7 +23,7 @@
 	  <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
-    <plugin>
+<!--     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>2.2</version>
@@ -45,7 +37,7 @@
             </execution>
         </executions>
     </plugin>
-    <plugin>
+ -->    <plugin>
       <artifactId>maven-assembly-plugin</artifactId>
       <executions>
         <execution>
@@ -56,6 +48,12 @@
         </execution>
       </executions>
       <configuration>
+            <archive>
+            <manifest>
+            <addClasspath>true</addClasspath>
+                <mainClass>main.java.miro.validator.ValidatorMain</mainClass>
+            </manifest>
+            </archive>
         <descriptorRefs>
           <descriptorRef>jar-with-dependencies</descriptorRef>
         </descriptorRefs>
