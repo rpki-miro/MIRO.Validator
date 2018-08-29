@@ -114,8 +114,8 @@ public class ValidatorMain {
 		}
 		try {
 			Connection conn = null;
-			String db_connection_str = "jdbc:postgresql://" + DB_HOST +":"+DB_PORT +"/" + DB_NAME;
-			conn = DriverManager.getConnection(db_connection_str, DB_USER, DB_PWD);
+			String db_connection_str = "jdbc:postgresql://" + DB_HOST +":"+DB_PORT +"/" + DB_NAME + "?currentSchema="+DB_NAME+"&user="+DB_USER+"&password="+DB_PWD;
+			conn = DriverManager.getConnection(db_connection_str);
 			clearDB(conn);
 			addTreesToDB(trees, conn);
 			addStatsToDB(trees, conn);
