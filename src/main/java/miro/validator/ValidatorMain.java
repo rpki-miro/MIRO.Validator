@@ -195,17 +195,18 @@ public class ValidatorMain {
 			
 			for (ResourceHoldingObject child : cert.getChildren()) {
 				if (child instanceof RoaObject) {
+					Integer roa_id = getNextID();
 					Integer ee_id = getNextID();
 					query = "INSERT INTO roa VALUES";
 					query += "(";
-					query += getRoaObjectDBValueString((RoaObject) child, tree, cert_id, ee_id);
+					query += getRoaObjectDBValueString((RoaObject) child, tree, cert_id, roa_id, ee_id);
 					query += ")";
 					stmt = conn.createStatement();
 					stmt.executeUpdate(query);
 					
 					query = "INSERT INTO roa_resource_certificate VALUES";
 					query += "(";
-					query += getRoaObjectEECertDBValueString(child.getCertificate(), child.getFilename(), tree, cert_id, ee_id);
+					query += getRoaObjectEECertDBValueString(child.getCertificate(), child.getFilename(), tree, cert_id, roa_id, ee_id);
 					query += ")";
 					stmt = conn.createStatement();
 					stmt.executeUpdate(query);
@@ -377,7 +378,7 @@ public class ValidatorMain {
 		return result;
 	}
 
-	public static String getRoaObjectDBValueString(RoaObject roa, String tree, Integer parent_id, Integer ee_id) {
+	public static String getRoaObjectDBValueString(RoaObject roa, String tree, Integer parent_id, Integer roa_id, Integer ee_id) {
 		String result = String.format("'%s', ", roa.getFilename());
 		result += String.format("%d, ", roa.getAsn().getValue());
 
@@ -398,7 +399,7 @@ public class ValidatorMain {
 		
 		result += String.format("'%s', ", roa.getParent().getFilename());
 		result += String.format("'%s', ", tree);
-		result += String.format("%d, ", getNextID());
+		result += String.format("%d, ", roa_id);
 		result += String.format("%d, ", parent_id);
 		result += String.format("%d, ", ee_id);
 		result += String.format("'%s'", roa.getRemoteLocation().toString());
@@ -406,7 +407,7 @@ public class ValidatorMain {
 	}
 	
 	public static String getRoaObjectEECertDBValueString(X509ResourceCertificate cert, String roa_name, String tree, Integer parent_id,
-			Integer ee_id) {
+			Integer roa_id, Integer ee_id) {
 		String result = String.format("'%s', ", cert.getSubject().toString());
 		result += String.format("%d, ", cert.getSerialNumber());
 		result += String.format("'%s', ", cert.getIssuer().toString());
@@ -508,11 +509,6 @@ public class ValidatorMain {
 		log.log(Level.FINE, "Reading config file at: {0}", path);
 		try {
 			prop.load(new FileInputStream(path));
-//			setTALDir(prop.getProperty("tal_dir", "/var/lib/MIRO/Validator/tals/"));
-//			setBaseDir(prop.getProperty("repo_dir", "/var/data/MIRO/Validator/repo/"));
-//			setPrefetchDir(prop.getProperty("prefetch_dir", "/var/data/MIRO/Validator/prefetch/"));
-//			setExportDir(prop.getProperty("json_export_dir", "/var/data/MIRO/Validator/export/"));
-//			setDatabaseCredentials(prop);
 			setDatabaseLocation(prop);
 		} catch (IOException e) {
 			log.log(Level.SEVERE, "Error: Could not read config file at {0}. Exiting.", path);
@@ -521,12 +517,7 @@ public class ValidatorMain {
 
 	private static void setDatabaseLocation(Properties prop) {
 		DB_HOST = prop.getProperty("db_host");
-//		DB_NAME = prop.getProperty("db_name");
 		DB_PORT = prop.getProperty("db_port");
-	}
-	private static void setDatabaseCredentials(Properties prop) {
-		DB_USER = prop.getProperty("db_user");
-		DB_PWD = prop.getProperty("db_pwd");
 	}
 	
 	private static void checkArguments(String[] args) {
@@ -541,25 +532,6 @@ public class ValidatorMain {
 		}
 	}
 
-	private static void setTALDir(String key) {
-		TALDirectory = key;
-		log.log(Level.FINE, "Set TALDirectory: {0}", key);
-	}
-	
-	private static void setBaseDir(String key) {
-		BASE_DIR = key;
-		log.log(Level.FINE, "Set BASE_DIR: {0}", key);
-	}
-	
-	private static void setPrefetchDir(String key) {
-		PREFETCH_DIR = key;
-		log.log(Level.FINE, "Set PREFETCH_DIR: {0}", key);
-	}
-	
-	private static void setExportDir(String key) {
-		EXPORT_DIR = key;
-		log.log(Level.FINE, "Set EXPORT_DIR: {0}", key);
-	}
 	
 	public static File[] getTALGroupDirectories() {
 		File talMainDir = new File(TALDirectory);
